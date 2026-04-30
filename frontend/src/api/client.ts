@@ -1,7 +1,8 @@
 import type { AnalyticsResponse, Expense, Farm, ReportResponse, Sale, User, Worker } from "../types";
 import { getToken, clearToken } from "../auth/tokenStore";
 
-export const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8001/api/v1";
+export const API_URL =
+  import.meta.env.VITE_API_URL ?? window.agricontoDesktop?.apiUrl ?? "http://localhost:8001/api/v1";
 
 export class ApiError extends Error {
   status: number;

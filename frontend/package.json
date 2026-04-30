@@ -29,6 +29,26 @@
       "build/icons/**/*",
       "package.json"
     ],
+    "extraResources": [
+      {
+        "from": "../backend",
+        "to": "backend",
+        "filter": [
+          "app/**/*",
+          "alembic/**/*",
+          "scripts/**/*",
+          "pyproject.toml",
+          "alembic.ini",
+          "!**/__pycache__/**",
+          "!**/.pytest_cache/**",
+          "!**/.ruff_cache/**",
+          "!storage/**",
+          "!.env",
+          "!.env.*",
+          "!agriconto_pro_backend.egg-info/**"
+        ]
+      }
+    ],
     "linux": {
       "target": [
         "deb",

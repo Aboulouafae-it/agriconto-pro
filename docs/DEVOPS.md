@@ -134,6 +134,41 @@ If a dependency advisory requires a breaking upgrade, document the impact, run t
 
 Do not expose these development services directly to the public internet.
 
+## Desktop Backend Sidecar
+
+The Debian/Linux desktop app uses Electron for the shell and keeps FastAPI as the
+backend. `frontend/electron/backendLauncher.cjs` is responsible for the local
+backend lifecycle:
+
+- checks whether `/health` already responds on `127.0.0.1:8001`;
+- starts `uvicorn app.main:app` from the backend directory when needed;
+- waits up to 25 seconds for `/health` before opening the app window;
+- stores backend logs under the Electron user-data directory;
+- generates a local runtime JWT secret when one is not provided by the environment;
+- sends `SIGTERM` on app shutdown and escalates to `SIGKILL` only after timeout.
+
+Development defaults:
+
+- backend directory: `../backend`
+- backend executable resolution: `AGRICONTO_BACKEND_PYTHON`, then `.venv/bin/python`,
+  then `python3`
+- API URL exposed to the renderer: `http://127.0.0.1:8001/api/v1`
+
+Packaged app defaults:
+
+- backend directory: Electron `resources/backend`
+- backend source is included as an `extraResources` payload;
+- generated `.deb`, AppImage and unpacked builds stay in `frontend/release/` and
+  are ignored by Git.
+
+Release hardening still needed before broad desktop distribution:
+
+- package a controlled Python runtime or backend binary;
+- define a local database strategy and migration-on-launch policy;
+- protect desktop secrets with OS keychain support where practical;
+- add log rotation for sidecar logs;
+- add automated smoke tests for installed `.deb` packages.
+
 ## Deployment Notes
 
 The current compose file is for development. Production should use:

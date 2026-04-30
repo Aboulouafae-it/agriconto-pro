@@ -116,6 +116,45 @@ The Vite dev server is pinned to `http://localhost:5173` so it matches backend C
 settings. If that port is busy, stop the other process instead of running the UI on a
 random port.
 
+## Desktop App For Debian/Linux
+
+The Electron desktop app wraps the React frontend and can start the FastAPI backend
+as a local sidecar process. The launcher waits for `/health` before opening the main
+window and writes backend logs to the desktop app user-data directory.
+
+Development desktop mode:
+
+```bash
+cd frontend
+npm run dev
+```
+
+In another terminal:
+
+```bash
+cd frontend
+AGRICONTO_DEV_URL=http://localhost:5173 npm run desktop:dev
+```
+
+The desktop launcher uses `../backend` in development and `resources/backend` in a
+packaged app. It looks for `AGRICONTO_BACKEND_PYTHON`, then `backend/.venv/bin/python`,
+then `python3`. Set `AGRICONTO_BACKEND_AUTOSTART=0` only when you intentionally want
+to use an already-running backend.
+
+Build Debian packages:
+
+```bash
+cd frontend
+npm run desktop:pack
+```
+
+Outputs are written to `frontend/release/` and are intentionally ignored by Git.
+
+Current desktop limitation: the packaged app includes backend source files, but a
+production-ready embedded Python runtime is not bundled yet. For installation on a
+fresh Linux machine, the next release step is to package a controlled Python runtime
+or backend binary sidecar plus a local database/runtime strategy.
+
 ## Migrations
 
 ```bash
