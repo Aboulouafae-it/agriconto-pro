@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   XCircle
 } from "lucide-react";
-import { useState, type ButtonHTMLAttributes, type ElementType, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ElementType, type ReactNode } from "react";
 import type { Role } from "../types";
 import { roleLabel } from "../lib/permissions";
 
@@ -283,9 +283,44 @@ export function ActionButton({
   );
 }
 
-export function ToastMessage({ tone = "info", title, detail, onClose }: { tone?: StatusTone; title: string; detail?: string; onClose: () => void }) {
+export function ToastMessage({
+  tone = "info",
+  title,
+  detail,
+  onClose,
+  duration = 5000
+}: {
+  tone?: StatusTone;
+  title: string;
+  detail?: string;
+  onClose: () => void;
+  duration?: number;
+}) {
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function startTimer() {
+    if (duration <= 0) return;
+    timerRef.current = setTimeout(onClose, duration);
+  }
+
+  function clearTimer() {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }
+
+  useEffect(() => {
+    startTimer();
+    return clearTimer;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <div className={`fixed right-4 top-4 z-50 max-w-sm rounded-2xl border p-4 text-sm shadow-soft ${toneClasses[tone]}`}>
+    <div
+      className={`fixed right-4 top-4 z-50 max-w-sm rounded-2xl border p-4 text-sm shadow-soft ${toneClasses[tone]}`}
+      onMouseEnter={clearTimer}
+      onMouseLeave={startTimer}
+      role="alert"
+      aria-live="polite"
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="font-bold">{title}</p>

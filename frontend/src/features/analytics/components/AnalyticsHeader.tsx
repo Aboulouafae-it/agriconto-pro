@@ -22,7 +22,7 @@ export function AnalyticsHeader({ onExport, onSaveView }: { onExport: () => void
               Statistiche e Analisi
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78 md:text-base">
-              Analizza in profondita ricavi, costi, lavoratori, colture, documenti e andamento aziendale con viste gestionali pronte per titolare e commercialista.
+              Analizza in profondità ricavi, costi, lavoratori, colture, documenti e andamento aziendale con viste gestionali pronte per titolare e commercialista.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/90">KPI direzionali</span>
@@ -40,8 +40,11 @@ export function AnalyticsHeader({ onExport, onSaveView }: { onExport: () => void
             </p>
           </div>
           <div className="grid gap-2">
-            <button onClick={onExport} className="btn-primary w-full"><Download size={17} />Esporta analisi</button>
+            <button onClick={onExport} className="btn-primary w-full" title="Esporta i dati del pannello analitico in formato JSON">
+              <Download size={17} />Esporta dati (JSON)
+            </button>
             <button type="button" onClick={onSaveView} className="btn-secondary w-full"><BarChart3 size={17} />Salva vista</button>
+            <p className="text-center text-xs text-stone-500">Export PDF analitico in sviluppo.</p>
           </div>
         </div>
       </div>

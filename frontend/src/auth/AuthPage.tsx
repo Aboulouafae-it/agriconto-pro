@@ -80,7 +80,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
               ["Report pronti per il commercialista", BarChart3],
               ["Documenti verificabili", FileCheck2]
             ].map(([label, Icon]) => (
-              <div key={label as string} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/8 p-4 backdrop-blur">
+              <div key={label as string} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.08] p-4 backdrop-blur">
                 <Icon size={20} />
                 <span className="text-sm font-semibold">{label as string}</span>
               </div>

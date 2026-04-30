@@ -51,11 +51,11 @@ type Props = {
 
 const emptyCopy: Record<Module, { title: string; detail: string; action: string }> = {
   workers: { title: "Non hai ancora aggiunto lavoratori.", detail: "Crea il primo profilo lavoratore per iniziare a registrare le giornate.", action: "Aggiungi lavoratore" },
-  workdays: { title: "Nessuna giornata registrata.", detail: "Registra ore, coltura e attivita con pochi tocchi dal campo.", action: "Nuova giornata" },
-  crops: { title: "Nessuna coltura configurata.", detail: "Collega colture, campi, costi e vendite per leggere la redditivita.", action: "Aggiungi coltura" },
+  workdays: { title: "Nessuna giornata registrata.", detail: "Registra ore, coltura e attività con pochi tocchi dal campo.", action: "Nuova giornata" },
+  crops: { title: "Nessuna coltura configurata.", detail: "Collega colture, campi, costi e vendite per leggere la redditività.", action: "Aggiungi coltura" },
   fields: { title: "Nessun campo registrato.", detail: "Crea il registro dei terreni con superfici, riferimenti e colture collegate.", action: "Aggiungi campo" },
   expenses: { title: "Nessuna spesa registrata.", detail: "Inizia aggiungendo una spesa o caricando una fattura.", action: "Nuova spesa" },
-  sales: { title: "Nessuna vendita registrata.", detail: "Registra prodotti, clienti, quantita e stato incasso.", action: "Nuova vendita" },
+  sales: { title: "Nessuna vendita registrata.", detail: "Registra prodotti, clienti, quantità e stato incasso.", action: "Nuova vendita" },
   documents: { title: "Nessun documento caricato.", detail: "Carica fatture, ricevute, contratti o documenti richiesti dal commercialista.", action: "Carica documento" }
 };
 
@@ -257,15 +257,16 @@ async function invalidateRelated(queryClient: ReturnType<typeof useQueryClient>,
 }
 
 function moduleEyebrow(module: Module) {
-  return {
-    workers: "Gestione lavoro",
-    workdays: "Operativita quotidiana",
-    crops: "Redditivita agricola",
+  const operativityCopy: Record<string, string> = {
+    workers: "Operatività quotidiana",
+    workdays: "Operatività quotidiana",
+    crops: "Redditività agricola",
     fields: "Registro terreni",
     expenses: "Controllo costi",
     sales: "Ricavi e incassi",
     documents: "Archivio sicuro"
-  }[module];
+  };
+  return operativityCopy[module] ?? module;
 }
 
 function moduleHero(module: Module, helpers: { openCreate: () => void; setToast: (toast: Toast) => void; fileInputRef: RefObject<HTMLInputElement> }) {
@@ -423,7 +424,7 @@ function renderFields(module: Module, form: Record<string, string>, set: (key: s
     <label key="status" className="block text-sm font-semibold text-ink">
       Stato
       <select className="input mt-1.5" value={form.status ?? "RECEIVED"} onChange={(event) => set("status", event.target.value)}>
-        <option value="RECEIVED">Documento presente</option>
+        <option value="RECEIVED">Ricevuto</option>
         <option value="REQUESTED">Richiesto</option>
         <option value="MISSING">Mancante</option>
         <option value="ARCHIVED">Archiviato</option>

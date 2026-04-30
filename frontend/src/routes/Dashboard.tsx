@@ -25,20 +25,55 @@ export function Dashboard() {
   const farm = useFarm();
   const navigate = useNavigate();
   const month = new Date();
+
   const report = useQuery({
     queryKey: ["report", farm.currentFarmId, "monthly"],
     queryFn: () =>
       apiClient.report(farm.currentFarmId!, "monthly", `?year=${month.getFullYear()}&month=${month.getMonth() + 1}`),
     enabled: Boolean(farm.currentFarmId)
   });
+
+  const cropReport = useQuery({
+    queryKey: ["report", farm.currentFarmId, "crops"],
+    queryFn: () => apiClient.report(farm.currentFarmId!, "crops"),
+    enabled: Boolean(farm.currentFarmId)
+  });
+
+  const missingReport = useQuery({
+    queryKey: ["report", farm.currentFarmId, "missing-documents"],
+    queryFn: () => apiClient.report(farm.currentFarmId!, "missing-documents"),
+    enabled: Boolean(farm.currentFarmId)
+  });
+
   const data = report.data?.data ?? {};
+
+  // Top crop by estimated profit — computed from real crop profitability data
+  const crops = (cropReport.data?.data as { crops?: Array<{ crop_name: string; estimated_profit: number }> })?.crops ?? [];
+  const topCrop =
+    crops.length === 0
+      ? null
+      : crops.reduce((best, c) => (c.estimated_profit > best.estimated_profit ? c : best), crops[0]);
+
+  // Readiness: compute from missing-documents report (lower missing count = higher readiness)
+  const missingData = missingReport.data?.data as { total_count?: number } | undefined;
+  const missingCount = Number(missingData?.total_count ?? 0);
+  const reportsLoaded = !missingReport.isLoading && missingReport.data != null;
+  const readiness = reportsLoaded ? Math.max(0, Math.min(100, 100 - missingCount * 8)) : null;
+
+  // Checklist items
+  const checklist: Array<[string, "success" | "warning"]> = [
+    ["Azienda configurata", farm.currentFarm ? "success" : "warning"],
+    ["Documenti mancanti verificati", missingCount === 0 ? "success" : "warning"],
+    ["Colture e campi registrati", crops.length > 0 ? "success" : "warning"],
+    ["Dati catastali da verificare", "warning"]
+  ];
 
   return (
     <section className="space-y-7">
       <PageHeader
         eyebrow="Cruscotto aziendale"
         title={farm.currentFarm?.name ?? "Dashboard"}
-        subtitle="Una vista rapida su ricavi, spese, lavoro, documenti e priorita operative."
+        subtitle="Una vista rapida su ricavi, spese, lavoro, documenti e priorità operative."
         actions={<span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800">Dati verificabili</span>}
       />
 
@@ -56,7 +91,7 @@ export function Dashboard() {
       {report.isError && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
           <p className="font-semibold">Riepilogo in preparazione</p>
-          <p className="mt-1">Mostriamo una vista demo finché il report mensile non è disponibile per il ruolo corrente.</p>
+          <p className="mt-1">Mostriamo una vista parziale finché il report mensile non è disponibile per il ruolo corrente.</p>
         </div>
       )}
 
@@ -97,18 +132,46 @@ export function Dashboard() {
         </div>
 
         <div className="grid gap-4">
-          <StatCard label="Documenti mancanti" value={String(data.missing_documents_count ?? 0)} icon={FileWarning} tone="danger" detail="Priorita per commercialista e tracciabilita." />
-          <StatCard label="Vendite non incassate" value={<MoneyValue value={0} />} icon={Landmark} tone="warning" detail="Tracciamento pagamenti previsto nei prossimi moduli." />
-          <StatCard label="Coltura piu redditizia" value="Pomodoro" icon={Leaf} tone="success" detail="Esempio basato sul seed demo e report colture." />
+          <StatCard label="Documenti mancanti" value={String(data.missing_documents_count ?? 0)} icon={FileWarning} tone="danger" detail="Priorità per commercialista e tracciabilità." />
+          <StatCard
+            label="Vendite non incassate"
+            value="Non tracciato"
+            icon={Landmark}
+            tone="warning"
+            detail="Tracciamento pagamenti previsto in una prossima versione."
+          />
+          <StatCard
+            label="Coltura più redditizia"
+            value={
+              cropReport.isLoading
+                ? "..."
+                : topCrop
+                ? topCrop.crop_name
+                : "Da calcolare"
+            }
+            icon={Leaf}
+            tone="success"
+            detail={
+              topCrop
+                ? `Margine stimato: ${new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(topCrop.estimated_profit)}`
+                : crops.length === 0
+                ? "Aggiungi colture per vedere il calcolo."
+                : "Dati insufficienti."
+            }
+          />
         </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="card p-5">
-          <h3 className="section-title">Attivita recente</h3>
+          <h3 className="section-title">Attività recente</h3>
           <div className="mt-5 space-y-4">
-            <TimelineItem title="Report mensile generato" detail="Riepilogo dati aggiornato con controlli permessi lato server." />
-            <TimelineItem title="Documento da completare" detail="Verifica le richieste aperte prima dell'invio al commercialista." tone="warning" />
+            <TimelineItem title="Report mensile disponibile" detail="Riepilogo dati aggiornato con controlli permessi lato server." />
+            {missingCount > 0 ? (
+              <TimelineItem title={`${missingCount} documento${missingCount === 1 ? "" : "i"} da completare`} detail="Verifica le richieste aperte prima dell'invio al commercialista." tone="warning" />
+            ) : (
+              <TimelineItem title="Nessun documento mancante" detail="Tutti i documenti risultano completi per il periodo corrente." />
+            )}
             <TimelineItem title="Audit trail attivo" detail="Creazioni, modifiche ed export vengono registrati." tone="info" />
           </div>
         </div>
@@ -116,20 +179,22 @@ export function Dashboard() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="section-title">Avanzamento configurazione</h3>
-              <p className="helper-text">Cosa manca per avere un pacchetto commercialista più completo.</p>
+              <p className="helper-text">Completezza documentale stimata in base ai dati mancanti.</p>
             </div>
-            <span className="rounded-full bg-field px-3 py-1 text-xs font-bold text-white">78%</span>
+            {readiness !== null ? (
+              <span className="rounded-full bg-field px-3 py-1 text-xs font-bold text-white">{readiness}%</span>
+            ) : (
+              <span className="rounded-full bg-stone-200 px-3 py-1 text-xs font-bold text-stone-500">—</span>
+            )}
           </div>
           <div className="mt-5 h-2 overflow-hidden rounded-full bg-stone-100">
-            <div className="h-full w-[78%] rounded-full bg-field" />
+            <div
+              className="h-full rounded-full bg-field transition-all duration-500"
+              style={{ width: readiness !== null ? `${readiness}%` : "0%" }}
+            />
           </div>
           <div className="mt-5 grid gap-3">
-            {[
-              ["Azienda configurata", "success"],
-              ["Lavoratori caricati", "success"],
-              ["Caricare fattura sementi", "warning"],
-              ["Verificare dati catastali", "warning"]
-            ].map(([label, tone]) => (
+            {checklist.map(([label, tone]) => (
               <div key={label} className="flex items-center justify-between rounded-xl border border-line bg-stone-50 px-4 py-3 text-sm">
                 <span className="font-semibold text-ink">{label}</span>
                 {tone === "success" ? <CheckCircle2 className="text-field" size={18} /> : <AlertTriangle className="text-amber-600" size={18} />}

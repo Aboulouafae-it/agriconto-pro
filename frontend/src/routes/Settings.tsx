@@ -1,26 +1,87 @@
-import { BriefcaseBusiness, KeyRound, Leaf, Lock, ShieldCheck, Tags, Users } from "lucide-react";
+import { BriefcaseBusiness, ExternalLink, KeyRound, Leaf, Lock, ShieldCheck, Tags, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
 import { PageHeader } from "../components/PageHeader";
-import { ConfirmDialog, RoleBadge, StatusBadge } from "../components/design-system";
+import { ConfirmDialog, RoleBadge, StatusBadge, ToastMessage } from "../components/design-system";
 import { roleLabel } from "../lib/permissions";
+import { useState } from "react";
 import type { Role } from "../types";
 
 const roles: Role[] = ["OWNER", "ACCOUNTANT", "LABOR_CONSULTANT", "WORKER"];
 
-const sections = [
-  ["Profilo azienda", "Dati anagrafici e indirizzo farm.", BriefcaseBusiness],
-  ["Profilo fiscale", "Metadato informativo, nessun calcolo ufficiale.", Leaf],
-  ["Utenti e ruoli", "Inviti, accessi e permessi server-side.", Users],
-  ["Categorie", "Classificazione spese, vendite e documenti.", Tags],
-  ["Sicurezza", "Token, sessione, audit trail e accessi.", Lock],
-  ["Disclaimer legale", "Ruolo di supporto, non sostituzione professionale.", ShieldCheck]
+type SettingCard = {
+  title: string;
+  detail: string;
+  Icon: React.ElementType;
+  action: "navigate" | "toast";
+  to?: string;
+};
+
+const sections: SettingCard[] = [
+  {
+    title: "Profilo azienda",
+    detail: "Dati anagrafici e indirizzo farm.",
+    Icon: BriefcaseBusiness,
+    action: "navigate",
+    to: "/azienda"
+  },
+  {
+    title: "Profilo fiscale",
+    detail: "Metadato informativo configurato nel profilo azienda.",
+    Icon: Leaf,
+    action: "navigate",
+    to: "/azienda"
+  },
+  {
+    title: "Utenti e ruoli",
+    detail: "Inviti, accessi e permessi server-side.",
+    Icon: Users,
+    action: "toast"
+  },
+  {
+    title: "Categorie",
+    detail: "Classificazione spese, vendite e documenti.",
+    Icon: Tags,
+    action: "toast"
+  },
+  {
+    title: "Sicurezza",
+    detail: "Token, sessione, audit trail e accessi.",
+    Icon: Lock,
+    action: "toast"
+  },
+  {
+    title: "Disclaimer legale",
+    detail: "Ruolo di supporto, non sostituzione professionale.",
+    Icon: ShieldCheck,
+    action: "toast"
+  }
 ] as const;
 
 export function Settings() {
   const auth = useAuth();
+  const navigate = useNavigate();
+  const [toast, setToast] = useState<string | null>(null);
+
+  function handleCard(card: SettingCard) {
+    if (card.action === "navigate" && card.to) {
+      navigate(card.to);
+    } else {
+      setToast(card.title);
+    }
+  }
 
   return (
     <section className="space-y-6">
+      {toast && (
+        <ToastMessage
+          tone="info"
+          title="Funzione in sviluppo"
+          detail={`"${toast}" sarà disponibile in una prossima versione.`}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <PageHeader
         eyebrow="Configurazione"
         title="Impostazioni"
@@ -56,24 +117,37 @@ export function Settings() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {sections.map(([title, detail, Icon]) => (
-          <div key={title} className="card p-5">
-            <div className="flex items-start gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-finance-light text-finance">
-                <Icon size={20} />
+        {sections.map((card) => {
+          const { Icon } = card;
+          const isNavigable = card.action === "navigate";
+          return (
+            <button
+              key={card.title}
+              type="button"
+              onClick={() => handleCard(card)}
+              className="card p-5 text-left transition hover:-translate-y-0.5 hover:border-field hover:shadow-soft focus-visible:outline-2 focus-visible:outline-field"
+            >
+              <div className="flex items-start gap-3">
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-finance-light text-finance">
+                  <Icon size={20} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-ink">{card.title}</h3>
+                    {isNavigable && <ExternalLink size={13} className="text-stone-400" />}
+                    {!isNavigable && <span className="rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-stone-500">In sviluppo</span>}
+                  </div>
+                  <p className="mt-1 text-sm leading-6 text-stone-600">{card.detail}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-ink">{title}</h3>
-                <p className="mt-1 text-sm leading-6 text-stone-600">{detail}</p>
-              </div>
-            </div>
-          </div>
-        ))}
+            </button>
+          );
+        })}
       </div>
 
       <ConfirmDialog
         title="Nota sulla sicurezza frontend"
-        detail="Il token e salvato in localStorage nella fondazione di sviluppo. Questa scelta e documentata e non sostituisce i controlli server-side."
+        detail="Il token è salvato in localStorage nella fondazione di sviluppo. Questa scelta è documentata e non sostituisce i controlli server-side."
       />
 
       <div className="card p-5">

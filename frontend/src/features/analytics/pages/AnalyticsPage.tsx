@@ -98,6 +98,7 @@ export function AnalyticsPage() {
     anchor.download = "agriconto-analisi.json";
     anchor.click();
     URL.revokeObjectURL(url);
+    setToast({ title: "Dati esportati", detail: "Il file JSON con i dati analitici è stato scaricato sul tuo dispositivo." });
   }
 
   function saveView() {

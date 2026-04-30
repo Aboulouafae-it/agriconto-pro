@@ -128,13 +128,30 @@ const reports: ReportDefinition[] = [
   }
 ];
 
+function isValidYear(value: string) {
+  const n = Number(value);
+  return /^\d{4}$/.test(value.trim()) && n >= 2000 && n <= 2100;
+}
+
 export function Reports() {
   const farm = useFarm();
   const auth = useAuth();
   const now = new Date();
   const [year, setYear] = useState(String(now.getFullYear()));
+  const [yearError, setYearError] = useState("");
   const [month, setMonth] = useState(String(now.getMonth() + 1));
   const query = useMemo(() => `?year=${year}&month=${month}`, [month, year]);
+
+  function handleYearChange(value: string) {
+    setYear(value);
+    if (!value.trim()) {
+      setYearError("L'anno è obbligatorio.");
+    } else if (!isValidYear(value)) {
+      setYearError("Inserisci un anno valido (2000–2100).");
+    } else {
+      setYearError("");
+    }
+  }
 
   return (
     <section className="space-y-6">
@@ -160,10 +177,21 @@ export function Reports() {
             </p>
           </div>
           <div className="grid gap-3 rounded-2xl border border-line bg-stone-50 p-4 sm:grid-cols-2">
-            <label className="text-sm font-semibold text-ink">
-              Anno
-              <input className="input mt-2" value={year} onChange={(event) => setYear(event.target.value)} inputMode="numeric" />
-            </label>
+            <div>
+              <label className="text-sm font-semibold text-ink" htmlFor="report-year">
+                Anno
+              </label>
+              <input
+                id="report-year"
+                className={`input mt-2 ${yearError ? "border-red-400 focus:border-red-500 focus:ring-red-200" : ""}`}
+                value={year}
+                onChange={(event) => handleYearChange(event.target.value)}
+                inputMode="numeric"
+                maxLength={4}
+                placeholder="Es. 2026"
+              />
+              {yearError && <p className="mt-1 text-xs font-medium text-red-700">{yearError}</p>}
+            </div>
             <label className="text-sm font-semibold text-ink">
               Mese
               <select className="input mt-2" value={month} onChange={(event) => setMonth(event.target.value)}>
@@ -189,6 +217,7 @@ export function Reports() {
             farmName={farm.currentFarm?.name}
             userName={auth.user?.full_name}
             query={report.name === "monthly" || report.name === "annual" ? query : ""}
+            yearError={yearError}
           />
         ))}
       </div>
@@ -201,18 +230,23 @@ function ReportTile({
   farmId,
   farmName,
   userName,
-  query
+  query,
+  yearError
 }: {
   report: ReportDefinition;
   farmId: string | null;
   farmName?: string;
   userName?: string;
   query: string;
+  yearError?: string;
 }) {
+  const usesYear = report.name === "monthly" || report.name === "annual";
+  const isDisabledByYear = usesYear && Boolean(yearError);
+
   const preview = useQuery({
     queryKey: ["report", farmId, report.name, query],
     queryFn: () => apiClient.report(farmId!, report.name, query),
-    enabled: Boolean(farmId)
+    enabled: Boolean(farmId) && !isDisabledByYear
   });
 
   const exportPdf = useMutation({
@@ -260,6 +294,12 @@ function ReportTile({
           ))}
         </div>
 
+        {isDisabledByYear && (
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            Anno non valido. Correggi il campo anno per generare questo report.
+          </div>
+        )}
+
         <div className="mt-5 rounded-2xl border border-line bg-white p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="text-sm font-bold text-ink">Anteprima dati</p>
@@ -285,11 +325,11 @@ function ReportTile({
         )}
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          <button className="btn-secondary" onClick={() => preview.refetch()} disabled={!farmId || preview.isFetching}>
+          <button className="btn-secondary" onClick={() => preview.refetch()} disabled={!farmId || preview.isFetching || isDisabledByYear}>
             <Printer size={17} />
             Anteprima
           </button>
-          <button className="btn-primary" onClick={() => exportPdf.mutate()} disabled={!farmId || exportPdf.isPending}>
+          <button className="btn-primary" onClick={() => exportPdf.mutate()} disabled={!farmId || exportPdf.isPending || isDisabledByYear}>
             <Download size={17} />
             {exportPdf.isPending ? "Generazione PDF..." : "Esporta PDF"}
           </button>
