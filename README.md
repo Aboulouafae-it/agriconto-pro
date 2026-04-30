@@ -172,35 +172,17 @@ The goal is to allow users to open AgriConto Pro like a normal desktop program w
 
 ## Architecture Overview
 
-```text
-AgriConto Pro
-│
-├── Frontend
-│   ├── React
-│   ├── TypeScript
-│   ├── Vite
-│   └── TailwindCSS
-│
-├── Backend
-│   ├── FastAPI
-│   ├── PostgreSQL
-│   ├── Authentication
-│   ├── RBAC
-│   ├── Reports
-│   └── Audit Logs
-│
-├── Desktop
-│   ├── Electron
-│   ├── Linux packaging
-│   └── Windows packaging planned
-│
-└── Documentation
-    ├── Product specification
-    ├── Architecture
-    ├── Security
-    ├── Database
-    ├── Reports
-    └── Roadmap
+AgriConto Pro is built with a modular architecture composed of:
+
+- **Frontend:** React, TypeScript, Vite, TailwindCSS
+- **Backend:** FastAPI, PostgreSQL, Authentication, RBAC, Reports, Audit Logs
+- **Desktop:** Electron, Linux packaging, Windows packaging planned
+- **Documentation:** Product, Architecture, Security, Database, Reports, Roadmap
+
+For the full technical architecture, see:
+
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+
 ## Security Principles
 
 Security is a core part of AgriConto Pro.
