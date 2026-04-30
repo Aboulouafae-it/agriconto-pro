@@ -188,6 +188,15 @@ class DocumentOut(DocumentIn, ApiModel):
     uploaded_at: datetime | None = None
 
 
+class DocumentUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=255)
+    document_type: str | None = Field(default=None, min_length=1, max_length=120)
+    status: DocumentStatus | None = None
+    related_entity_type: str | None = Field(default=None, max_length=80)
+    related_entity_id: UUID | None = None
+    notes: str | None = Field(default=None, max_length=4000)
+
+
 class DocumentRequestIn(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     requested_from: str | None = Field(default=None, max_length=255)

@@ -23,3 +23,5 @@ frontend/release/
 htmlcov/
 *.pyc
 *.log
+frontend/test-results/
+frontend/playwright-report/

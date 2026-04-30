@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowUpRight, Download, ExternalLink, MapPinned, TableProperties } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Download, ExternalLink, MapPinned, TableProperties, X } from "lucide-react";
 import { DataTable, MoneyValue, StatusBadge, ToastMessage } from "../../../components/design-system";
 import { useState } from "react";
 import type { ChartPoint } from "../types";
@@ -12,18 +12,36 @@ function object(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 }
 
-function SectionShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+function downloadJson(filename: string, payload: unknown) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+function SectionShell({ title, subtitle, exportPayload, children }: { title: string; subtitle: string; exportPayload: Record<string, unknown>; children: React.ReactNode }) {
   const [notice, setNotice] = useState(false);
+  function exportSection() {
+    downloadJson(`${title.toLowerCase().replace(/\s+/g, "-")}.json`, {
+      title,
+      generated_at: new Date().toISOString(),
+      data: exportPayload
+    });
+    setNotice(true);
+  }
   return (
     <section className="space-y-5 rounded-2xl border border-line bg-white/55 p-4 shadow-sm md:p-5">
-      {notice && <ToastMessage tone="info" title="Esportazione sezione in sviluppo" detail="Per ora usa “Esporta analisi” in alto per scaricare il riepilogo JSON filtrato." onClose={() => setNotice(false)} />}
+      {notice && <ToastMessage tone="success" title="Sezione esportata" detail="Il file JSON della sezione è stato generato localmente." onClose={() => setNotice(false)} />}
       <div className="flex flex-col justify-between gap-3 border-b border-line pb-4 md:flex-row md:items-end">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-field">Modulo analitico</p>
           <h2 className="mt-1 text-2xl font-bold tracking-tight text-ink">{title}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">{subtitle}</p>
         </div>
-        <button type="button" onClick={() => setNotice(true)} className="btn-secondary"><Download size={16} />Esporta sezione</button>
+        <button type="button" onClick={exportSection} className="btn-secondary"><Download size={16} />Esporta sezione</button>
       </div>
       {children}
     </section>
@@ -32,7 +50,7 @@ function SectionShell({ title, subtitle, children }: { title: string; subtitle: 
 
 export function FinancialOverviewSection({ data }: { data: Record<string, unknown> }) {
   return (
-    <SectionShell title="Panoramica Economica" subtitle="Ricavi, spese, risultato netto e andamento cumulativo nel periodo selezionato.">
+    <SectionShell title="Panoramica Economica" subtitle="Ricavi, spese, risultato netto e andamento cumulativo nel periodo selezionato." exportPayload={data}>
       <div className="grid gap-5 xl:grid-cols-2">
         <ChartCard title="Ricavi vs spese vs netto" subtitle="Trend mensile comparato">
           <MultiLineChart data={list(data.timeline)} keys={[{ key: "revenue", label: "Ricavi", className: "bg-field" }, { key: "expenses", label: "Spese", className: "bg-warning" }, { key: "net_result", label: "Netto", className: "bg-finance" }]} />
@@ -53,10 +71,10 @@ export function FinancialOverviewSection({ data }: { data: Record<string, unknow
 
 export function CropAnalyticsSection({ data }: { data: Record<string, unknown> }) {
   const rows = list(data.ranking);
-  const [notice, setNotice] = useState(false);
+  const [selected, setSelected] = useState<ChartPoint | null>(null);
   return (
-    <SectionShell title="Analisi Redditivita Colture" subtitle="Capisci quali colture generano valore e quali richiedono attenzione.">
-      {notice && <ToastMessage tone="info" title="Drill-down in sviluppo" detail="Il dettaglio coltura sarà collegato alla scheda coltura con filtri attivi." onClose={() => setNotice(false)} />}
+    <SectionShell title="Analisi Redditivita Colture" subtitle="Capisci quali colture generano valore e quali richiedono attenzione." exportPayload={data}>
+      {selected && <DrillDownModal title={`Dettaglio coltura: ${String(selected.name)}`} row={selected} onClose={() => setSelected(null)} />}
       <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
         <ChartCard title="Profitto per coltura" subtitle="Ricavi meno spese e costo lavoro">
           <BarChart data={list(data.profit_by_crop)} />
@@ -70,7 +88,7 @@ export function CropAnalyticsSection({ data }: { data: Record<string, unknown> }
         rows={rows.map((row) => ({
           id: String(row.id),
           cells: [
-            <button type="button" onClick={() => setNotice(true)} className="inline-flex items-center gap-1 font-bold text-field">{String(row.name)}<ExternalLink size={13} /></button>,
+            <button type="button" onClick={() => setSelected(row)} className="inline-flex items-center gap-1 font-bold text-field">{String(row.name)}<ExternalLink size={13} /></button>,
             <MoneyValue value={row.linked_sales} />,
             <MoneyValue value={row.linked_expenses} />,
             <MoneyValue value={row.linked_labor_cost} />,
@@ -87,7 +105,7 @@ export function CropAnalyticsSection({ data }: { data: Record<string, unknown> }
 export function FieldAnalyticsSection({ data }: { data: Record<string, unknown> }) {
   const rows = list(data.ranking);
   return (
-    <SectionShell title="Analisi Campi" subtitle="Prestazioni economiche per superficie, colture collegate e produttivita per ettaro.">
+    <SectionShell title="Analisi Campi" subtitle="Prestazioni economiche per superficie, colture collegate e produttivita per ettaro." exportPayload={data}>
       <div className="grid gap-5 lg:grid-cols-2">
         <ChartCard title="Profitto per campo"><BarChart data={list(data.profit_by_field)} /></ChartCard>
         <ChartCard title="Mappa campi" subtitle="Geografia operativa e redditivita per appezzamento">
@@ -108,7 +126,7 @@ export function FieldAnalyticsSection({ data }: { data: Record<string, unknown> 
 
 export function LaborAnalyticsSection({ data }: { data: Record<string, unknown> }) {
   return (
-    <SectionShell title="Analisi Lavoratori e Manodopera" subtitle="Costo del lavoro, saldi, distribuzione attivita e stagionalita operativa.">
+    <SectionShell title="Analisi Lavoratori e Manodopera" subtitle="Costo del lavoro, saldi, distribuzione attivita e stagionalita operativa." exportPayload={data}>
       <div className="grid gap-5 xl:grid-cols-3">
         <ChartCard title="Compensi per lavoratore"><BarChart data={list(data.earnings_by_worker)} /></ChartCard>
         <ChartCard title="Distribuzione attivita"><Funnel data={list(data.task_distribution)} /></ChartCard>
@@ -128,7 +146,7 @@ export function LaborAnalyticsSection({ data }: { data: Record<string, unknown> 
 
 export function ExpenseAnalyticsSection({ data }: { data: Record<string, unknown> }) {
   return (
-    <SectionShell title="Analisi Spese" subtitle="Categorie, fornitori, trend, intensita e concentrazione dei costi.">
+    <SectionShell title="Analisi Spese" subtitle="Categorie, fornitori, trend, intensita e concentrazione dei costi." exportPayload={data}>
       <div className="grid gap-5 xl:grid-cols-3">
         <ChartCard title="Spese per categoria"><DonutChart data={list(data.by_category)} /></ChartCard>
         <ChartCard title="Spese per fornitore"><Treemap data={list(data.by_supplier)} /></ChartCard>
@@ -141,7 +159,7 @@ export function ExpenseAnalyticsSection({ data }: { data: Record<string, unknown
 
 export function SalesAnalyticsSection({ data }: { data: Record<string, unknown> }) {
   return (
-    <SectionShell title="Analisi Vendite e Incassi" subtitle="Clienti, colture/prodotti, incassi e segnali sui crediti commerciali.">
+    <SectionShell title="Analisi Vendite e Incassi" subtitle="Clienti, colture/prodotti, incassi e segnali sui crediti commerciali." exportPayload={data}>
       <div className="grid gap-5 xl:grid-cols-3">
         <ChartCard title="Vendite per cliente"><BarChart data={list(data.by_customer)} /></ChartCard>
         <ChartCard title="Pagate vs non incassate"><DonutChart data={list(data.paid_vs_unpaid)} /></ChartCard>
@@ -153,7 +171,7 @@ export function SalesAnalyticsSection({ data }: { data: Record<string, unknown> 
 
 export function DocumentAnalyticsSection({ data }: { data: Record<string, unknown> }) {
   return (
-    <SectionShell title="Analisi Documentale" subtitle="Completezza documenti, richieste aperte e priorita per titolare e commercialista.">
+    <SectionShell title="Analisi Documentale" subtitle="Completezza documenti, richieste aperte e priorita per titolare e commercialista." exportPayload={data}>
       <div className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
         <ChartCard title="Tasso completezza"><DonutChart data={list(data.completeness_donut)} /></ChartCard>
         <DataTable
@@ -173,7 +191,7 @@ export function ComparisonAnalyticsSection({ data }: { data: Record<string, unkn
   const current = object(data.current_period);
   const previous = object(data.previous_period);
   return (
-    <SectionShell title="Confronti Periodici" subtitle="Lettura comparativa tra periodo corrente e precedente, pronta per estensioni stagionali.">
+    <SectionShell title="Confronti Periodici" subtitle="Lettura comparativa tra periodo corrente e precedente, pronta per estensioni stagionali." exportPayload={data}>
       <div className="grid gap-4 md:grid-cols-2">
         {[["Periodo corrente", current], ["Periodo precedente", previous]].map(([label, values]) => (
           <div key={String(label)} className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
@@ -194,7 +212,7 @@ export function ComparisonAnalyticsSection({ data }: { data: Record<string, unkn
 
 export function AdvancedInsightsSection({ data, overviewInsights }: { data: Record<string, unknown>; overviewInsights: Array<{ title: string; detail: string; tone?: "success" | "warning" | "danger" | "info" | "neutral" }> }) {
   return (
-    <SectionShell title="Indicatori Avanzati" subtitle="Rapporti gestionali e avvisi intelligenti senza logica fiscale o payroll ufficiale.">
+    <SectionShell title="Indicatori Avanzati" subtitle="Rapporti gestionali e avvisi intelligenti senza logica fiscale o payroll ufficiale." exportPayload={data}>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {list(data.indicators).map((indicator) => (
           <Metric key={String(indicator.label)} label={String(indicator.label)} value={`${indicator.value ?? "-"} ${indicator.unit ?? ""}`} />
@@ -207,7 +225,7 @@ export function AdvancedInsightsSection({ data, overviewInsights }: { data: Reco
 
 export function DetailTablesSection({ data }: { data: Record<string, unknown> }) {
   return (
-    <SectionShell title="Tabelle di Dettaglio" subtitle="Tabelle operative leggibili, filtrabili ed esportabili per analisi contabile.">
+    <SectionShell title="Tabelle di Dettaglio" subtitle="Tabelle operative leggibili, filtrabili ed esportabili per analisi contabile." exportPayload={data}>
       <div className="rounded-2xl border border-line bg-white shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-stone-50 px-5 py-4">
           <div className="flex items-center gap-2">
@@ -238,6 +256,34 @@ function Metric({ label, value }: { label: string; value: React.ReactNode }) {
         {String(value).startsWith("-") ? <ArrowDownRight size={13} /> : <ArrowUpRight size={13} />}
         Valore gestionale
       </p>
+    </div>
+  );
+}
+
+function DrillDownModal({ title, row, onClose }: { title: string; row: ChartPoint; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-ink/35 p-4">
+      <div className="w-full max-w-2xl rounded-2xl bg-white p-5 shadow-soft">
+        <div className="flex items-start justify-between gap-4 border-b border-line pb-4">
+          <div>
+            <h3 className="text-xl font-bold text-ink">{title}</h3>
+            <p className="helper-text mt-1">Drill-down gestionale basato sui dati aggregati restituiti dal server.</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-xl border border-line p-2 text-stone-600 hover:text-danger" aria-label="Chiudi dettaglio">
+            <X size={18} />
+          </button>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          {Object.entries(row).map(([key, value]) => (
+            <div key={key} className="rounded-xl border border-line bg-stone-50 p-3">
+              <p className="text-xs font-bold uppercase text-stone-500">{key.replace(/_/g, " ")}</p>
+              <p className="mt-1 break-words text-sm font-semibold text-ink">
+                {typeof value === "number" ? value.toLocaleString("it-IT") : Array.isArray(value) ? value.join(", ") : String(value ?? "-")}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

@@ -137,10 +137,6 @@ export function ModulePage({ module, title, subtitle, columns }: Props) {
   }
 
   function openEdit(item: RecordItem) {
-    if (module === "documents") {
-      setToast({ tone: "info", title: "Funzione in sviluppo", detail: "La modifica dei metadati documento sarà disponibile nella prossima iterazione. Puoi eliminare e ricaricare il documento." });
-      return;
-    }
     setEditing(item);
     setForm(formFromRecord(module, item));
     setFile(null);
@@ -424,6 +420,15 @@ function renderFields(module: Module, form: Record<string, string>, set: (key: s
       <input className="input mt-1.5" type="file" disabled={isEdit} onChange={(event) => onFile(event.target.files?.[0] ?? null)} />
       <span className="mt-1 block text-xs font-normal text-stone-500">{file ? file.name : "PDF, PNG, JPG o TXT. Max 10 MB."}</span>
     </label>,
+    <label key="status" className="block text-sm font-semibold text-ink">
+      Stato
+      <select className="input mt-1.5" value={form.status ?? "RECEIVED"} onChange={(event) => set("status", event.target.value)}>
+        <option value="RECEIVED">Documento presente</option>
+        <option value="REQUESTED">Richiesto</option>
+        <option value="MISSING">Mancante</option>
+        <option value="ARCHIVED">Archiviato</option>
+      </select>
+    </label>,
     input("notes", "Note")
   ];
 }
@@ -435,7 +440,7 @@ function initialForm(module: Module): Record<string, string> {
   if (module === "workdays") return { work_date: today(), description: "", worker_id: "", crop_id: "", hours: "", hourly_rate: "" };
   if (module === "expenses") return { expense_date: today(), category: "", amount: "", description: "", crop_id: "" };
   if (module === "sales") return { sale_date: today(), amount: "", description: "", crop_id: "" };
-  return { title: "", document_type: "Fattura", notes: "" };
+  return { title: "", document_type: "Fattura", status: "RECEIVED", notes: "" };
 }
 
 function formFromRecord(module: Module, item: RecordItem): Record<string, string> {
@@ -488,6 +493,14 @@ async function saveRecord(module: Module, farmId: string, form: Record<string, s
       });
     }
     return workday;
+  }
+  if (module === "documents" && editing) {
+    return apiClient.updateDocument(farmId, editing.id, {
+      title: form.title,
+      document_type: form.document_type,
+      status: form.status as Document["status"],
+      notes: form.notes || null
+    });
   }
   const data = new FormData();
   data.append("title", form.title);

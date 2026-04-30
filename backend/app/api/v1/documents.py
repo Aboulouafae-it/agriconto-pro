@@ -7,14 +7,14 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import Response
 
 from app.api.deps import CurrentUser, DbDep
-from app.api.v1.resource_helpers import delete_resource, get_resource, list_resource
+from app.api.v1.resource_helpers import delete_resource, get_resource, list_resource, patch_resource
 from app.core.audit import audit_create, audit_custom_event
 from app.core.exceptions import ValidationError
 from app.core.permissions import ensure_can_create, ensure_can_read, require_farm_access_to_entity
 from app.models import Document
 from app.models.enums import DocumentStatus
 from app.schemas.common import Page, PaginationParams
-from app.schemas.domain import DocumentOut
+from app.schemas.domain import DocumentOut, DocumentUpdate
 from app.storage.local import LocalDocumentStorage
 
 router = APIRouter(prefix="/farms/{farm_id}/documents", tags=["documents"])
@@ -106,6 +106,25 @@ def list_documents(
 @router.get("/{document_id}", response_model=DocumentOut)
 def get_document(farm_id: UUID, document_id: UUID, db: DbDep, current_user: CurrentUser):
     return get_resource(db, current_user, farm_id, document_id, Document)
+
+
+@router.patch("/{document_id}", response_model=DocumentOut)
+def patch_document(
+    farm_id: UUID,
+    document_id: UUID,
+    payload: DocumentUpdate,
+    db: DbDep,
+    current_user: CurrentUser,
+):
+    data = payload.model_dump(exclude_unset=True)
+    related_entity_type = data.get("related_entity_type")
+    related_entity_id = data.get("related_entity_id")
+    if related_entity_type or related_entity_id:
+        entity_type = RELATED_ENTITY_TYPES.get(str(related_entity_type))
+        if not entity_type or not related_entity_id:
+            raise ValidationError("Riferimento documento non valido")
+        require_farm_access_to_entity(db, current_user.id, farm_id, entity_type, related_entity_id)
+    return patch_resource(db, current_user, farm_id, document_id, Document, payload)
 
 
 @router.get("/{document_id}/download")

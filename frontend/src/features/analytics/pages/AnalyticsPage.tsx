@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { BarChart3, Brain, FileCheck2, Loader2, ShieldCheck } from "lucide-react";
-import { ErrorState, LoadingState, EmptyState, StatusBadge } from "../../../components/design-system";
+import { ErrorState, LoadingState, EmptyState, StatusBadge, ToastMessage } from "../../../components/design-system";
 import { useAuth } from "../../../auth/AuthProvider";
 import { useFarm } from "../../useFarm";
 import { AnalyticsFiltersState, fetchAnalyticsOverview, fetchAnalyticsSection } from "../api/analyticsApi";
@@ -56,6 +56,7 @@ export function AnalyticsPage() {
   const farm = useFarm();
   const auth = useAuth();
   const [filters, setFilters] = useState(defaultFilters);
+  const [toast, setToast] = useState<{ title: string; detail: string } | null>(null);
   const visibleSections = auth.role === "LABOR_CONSULTANT" ? laborSections : auth.role === "WORKER" ? [] : sections;
   const overview = useQuery({
     queryKey: ["analytics", farm.currentFarmId, "overview", filters],
@@ -99,9 +100,24 @@ export function AnalyticsPage() {
     URL.revokeObjectURL(url);
   }
 
+  function saveView() {
+    const savedViews = JSON.parse(localStorage.getItem("agriconto.analytics.views") ?? "[]") as unknown[];
+    const view = {
+      id: crypto.randomUUID(),
+      name: `Vista ${new Date().toLocaleString("it-IT")}`,
+      farm_id: farm.currentFarmId,
+      farm: farm.currentFarm?.name,
+      filters,
+      created_at: new Date().toISOString()
+    };
+    localStorage.setItem("agriconto.analytics.views", JSON.stringify([view, ...savedViews].slice(0, 10)));
+    setToast({ title: "Vista salvata", detail: "La configurazione dei filtri è stata salvata localmente su questo dispositivo." });
+  }
+
   return (
     <section className="space-y-8">
-      <AnalyticsHeader onExport={exportSummary} />
+      {toast && <ToastMessage tone="success" title={toast.title} detail={toast.detail} onClose={() => setToast(null)} />}
+      <AnalyticsHeader onExport={exportSummary} onSaveView={saveView} />
       <AnalyticsFilters filters={filters} onChange={setFilters} onReset={() => setFilters(defaultFilters)} />
 
       {farm.isLoading && <LoadingState label="Caricamento azienda..." />}

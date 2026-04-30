@@ -1,12 +1,9 @@
 import { BarChart3, CalendarRange, Download, FileText, ShieldCheck, Sparkles } from "lucide-react";
-import { StatusBadge, ToastMessage } from "../../../components/design-system";
-import { useState } from "react";
+import { StatusBadge } from "../../../components/design-system";
 
-export function AnalyticsHeader({ onExport }: { onExport: () => void }) {
-  const [notice, setNotice] = useState(false);
+export function AnalyticsHeader({ onExport, onSaveView }: { onExport: () => void; onSaveView: () => void }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-      {notice && <ToastMessage tone="info" title="Funzione in sviluppo" detail="Le viste salvate saranno collegate ai preset utente in una prossima versione." onClose={() => setNotice(false)} />}
       <div className="grid gap-0 lg:grid-cols-[1.35fr_0.65fr]">
         <div className="relative overflow-hidden bg-finance p-6 text-white md:p-8">
           <div className="absolute inset-x-0 bottom-0 h-px bg-white/20" />
@@ -44,7 +41,7 @@ export function AnalyticsHeader({ onExport }: { onExport: () => void }) {
           </div>
           <div className="grid gap-2">
             <button onClick={onExport} className="btn-primary w-full"><Download size={17} />Esporta analisi</button>
-            <button type="button" onClick={() => setNotice(true)} className="btn-secondary w-full"><BarChart3 size={17} />Vista salvata</button>
+            <button type="button" onClick={onSaveView} className="btn-secondary w-full"><BarChart3 size={17} />Salva vista</button>
           </div>
         </div>
       </div>

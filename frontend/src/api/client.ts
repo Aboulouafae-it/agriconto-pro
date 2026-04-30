@@ -125,6 +125,7 @@ export const apiClient = {
   updateSale: (farmId: string, saleId: string, payload: Partial<Omit<Sale, "id">>) => api<Sale>(`/farms/${farmId}/sales/${saleId}`, { method: "PATCH", body: payload }),
   deleteSale: (farmId: string, saleId: string) => api<void>(`/farms/${farmId}/sales/${saleId}`, { method: "DELETE" }),
   documents: async (farmId: string) => unwrapPage(await api<Page<Document> | Document[]>(`/farms/${farmId}/documents`)),
+  updateDocument: (farmId: string, documentId: string, payload: Partial<Omit<Document, "id">>) => api<Document>(`/farms/${farmId}/documents/${documentId}`, { method: "PATCH", body: payload }),
   deleteDocument: (farmId: string, documentId: string) => api<void>(`/farms/${farmId}/documents/${documentId}`, { method: "DELETE" }),
   documentRequests: async (farmId: string) => unwrapPage(await api<Page<{ id: string; title: string; status: string; due_date?: string | null; requested_from?: string | null }> | Array<{ id: string; title: string; status: string; due_date?: string | null; requested_from?: string | null }>>(`/farms/${farmId}/document-requests`)),
   report: <T = Record<string, unknown>>(farmId: string, name: string, query = "") =>
