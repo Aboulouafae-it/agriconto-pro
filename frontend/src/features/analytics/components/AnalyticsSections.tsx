@@ -1,5 +1,6 @@
 import { ArrowDownRight, ArrowUpRight, Download, ExternalLink, MapPinned, TableProperties } from "lucide-react";
-import { DataTable, MoneyValue, StatusBadge } from "../../../components/design-system";
+import { DataTable, MoneyValue, StatusBadge, ToastMessage } from "../../../components/design-system";
+import { useState } from "react";
 import type { ChartPoint } from "../types";
 import { BarChart, ChartCard, DonutChart, Funnel, Heatmap, InsightList, MultiLineChart, NoChartData, Treemap, Waterfall } from "./AnalyticsCharts";
 
@@ -12,15 +13,17 @@ function object(value: unknown): Record<string, unknown> {
 }
 
 function SectionShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+  const [notice, setNotice] = useState(false);
   return (
     <section className="space-y-5 rounded-2xl border border-line bg-white/55 p-4 shadow-sm md:p-5">
+      {notice && <ToastMessage tone="info" title="Esportazione sezione in sviluppo" detail="Per ora usa “Esporta analisi” in alto per scaricare il riepilogo JSON filtrato." onClose={() => setNotice(false)} />}
       <div className="flex flex-col justify-between gap-3 border-b border-line pb-4 md:flex-row md:items-end">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-field">Modulo analitico</p>
           <h2 className="mt-1 text-2xl font-bold tracking-tight text-ink">{title}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">{subtitle}</p>
         </div>
-        <button className="btn-secondary"><Download size={16} />Esporta sezione</button>
+        <button type="button" onClick={() => setNotice(true)} className="btn-secondary"><Download size={16} />Esporta sezione</button>
       </div>
       {children}
     </section>
@@ -50,8 +53,10 @@ export function FinancialOverviewSection({ data }: { data: Record<string, unknow
 
 export function CropAnalyticsSection({ data }: { data: Record<string, unknown> }) {
   const rows = list(data.ranking);
+  const [notice, setNotice] = useState(false);
   return (
     <SectionShell title="Analisi Redditivita Colture" subtitle="Capisci quali colture generano valore e quali richiedono attenzione.">
+      {notice && <ToastMessage tone="info" title="Drill-down in sviluppo" detail="Il dettaglio coltura sarà collegato alla scheda coltura con filtri attivi." onClose={() => setNotice(false)} />}
       <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
         <ChartCard title="Profitto per coltura" subtitle="Ricavi meno spese e costo lavoro">
           <BarChart data={list(data.profit_by_crop)} />
@@ -65,7 +70,7 @@ export function CropAnalyticsSection({ data }: { data: Record<string, unknown> }
         rows={rows.map((row) => ({
           id: String(row.id),
           cells: [
-            <button className="inline-flex items-center gap-1 font-bold text-field">{String(row.name)}<ExternalLink size={13} /></button>,
+            <button type="button" onClick={() => setNotice(true)} className="inline-flex items-center gap-1 font-bold text-field">{String(row.name)}<ExternalLink size={13} /></button>,
             <MoneyValue value={row.linked_sales} />,
             <MoneyValue value={row.linked_expenses} />,
             <MoneyValue value={row.linked_labor_cost} />,

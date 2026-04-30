@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field  # type: ignore[import]
 
 from app.models.enums import DocumentStatus, ReportExportStatus
 
@@ -44,6 +44,12 @@ class FieldOut(FieldIn, ApiModel):
     id: UUID
 
 
+class FieldUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=160)
+    cadastral_reference: str | None = Field(default=None, max_length=160)
+    area_hectares: Decimal | None = Field(default=None, ge=0, decimal_places=4)
+
+
 class CropIn(BaseModel):
     name: str = Field(min_length=1, max_length=160)
     season: str | None = Field(default=None, max_length=80)
@@ -52,6 +58,12 @@ class CropIn(BaseModel):
 
 class CropOut(CropIn, ApiModel):
     id: UUID
+
+
+class CropUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=160)
+    season: str | None = Field(default=None, max_length=80)
+    field_id: UUID | None = None
 
 
 class WorkdayIn(BaseModel):

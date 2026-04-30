@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, BarChart3, CheckCircle2, FileWarning, Landmark, Leaf, Receipt, Upload, WalletCards } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { apiClient } from "../api/client";
 import { PageHeader } from "../components/PageHeader";
 import {
@@ -14,14 +15,15 @@ import {
 import { useFarm } from "../features/useFarm";
 
 const quickActions = [
-  { label: "Nuova spesa", icon: Receipt },
-  { label: "Nuova giornata", icon: WalletCards },
-  { label: "Carica documento", icon: Upload },
-  { label: "Nuova vendita", icon: Landmark }
+  { label: "Nuova spesa", icon: Receipt, to: "/spese?action=new" },
+  { label: "Nuova giornata", icon: WalletCards, to: "/giornate?action=new" },
+  { label: "Carica documento", icon: Upload, to: "/documenti?action=new" },
+  { label: "Nuova vendita", icon: Landmark, to: "/vendite?action=new" }
 ];
 
 export function Dashboard() {
   const farm = useFarm();
+  const navigate = useNavigate();
   const month = new Date();
   const report = useQuery({
     queryKey: ["report", farm.currentFarmId, "monthly"],
@@ -43,11 +45,11 @@ export function Dashboard() {
       {farm.isLoading && <LoadingState label="Caricamento azienda..." />}
       {farm.error && <ErrorState title="Azienda non disponibile" detail="Non siamo riusciti a caricare l'azienda. Riprova tra poco o verifica la sessione." />}
       {!farm.currentFarmId && !farm.isLoading && (
-        <EmptyState title="Configura un'azienda" detail="Crea o seleziona una farm per vedere il riepilogo operativo." actionLabel="Configura azienda" />
+        <EmptyState title="Configura un'azienda" detail="Crea o seleziona una farm per vedere il riepilogo operativo." actionLabel="Configura azienda" onAction={() => navigate("/azienda")} />
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {quickActions.map((action) => <QuickActionButton key={action.label} icon={action.icon} label={action.label} />)}
+        {quickActions.map((action) => <QuickActionButton key={action.label} icon={action.icon} label={action.label} onClick={() => navigate(action.to)} disabled={!farm.currentFarmId} />)}
       </div>
 
       {report.isLoading && <LoadingState label="Calcolo riepilogo mensile..." />}

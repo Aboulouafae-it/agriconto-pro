@@ -1,12 +1,14 @@
 from fastapi import APIRouter
 
 from app.analytics.api import analytics
-from app.api.v1 import auth, document_requests, documents, expenses, farms, reports, sales, workdays, workers
+from app.api.v1 import auth, crops, document_requests, documents, expenses, farms, fields, reports, sales, workdays, workers
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(auth.router)
 api_router.include_router(farms.router)
 api_router.include_router(workers.router)
+api_router.include_router(fields.router)
+api_router.include_router(crops.router)
 api_router.include_router(workdays.router)
 api_router.include_router(expenses.router)
 api_router.include_router(sales.router)

@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   XCircle
 } from "lucide-react";
-import type { ElementType, ReactNode } from "react";
+import { useState, type ButtonHTMLAttributes, type ElementType, type ReactNode } from "react";
 import type { Role } from "../types";
 import { roleLabel } from "../lib/permissions";
 
@@ -95,11 +95,13 @@ export function StatCard({
 export function DataTable({
   columns,
   rows,
-  empty
+  empty,
+  search = ""
 }: {
   columns: readonly string[];
   rows: Array<{ id: string; cells: ReactNode[] }>;
   empty: ReactNode;
+  search?: string;
 }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
@@ -121,17 +123,29 @@ export function DataTable({
   );
 }
 
-export function FilterBar({ placeholder = "Cerca" }: { placeholder?: string }) {
+export function FilterBar({
+  placeholder = "Cerca",
+  value,
+  onChange,
+  onFilters
+}: {
+  placeholder?: string;
+  value?: string;
+  onChange?: (value: string) => void;
+  onFilters?: () => void;
+}) {
+  const [notice, setNotice] = useState(false);
   return (
     <div className="card flex flex-col gap-3 p-3 sm:flex-row sm:items-center">
       <label className="relative flex-1">
         <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={17} />
-        <input className="input pl-9" placeholder={placeholder} />
+        <input className="input pl-9" placeholder={placeholder} value={value ?? ""} onChange={(event) => onChange?.(event.target.value)} />
       </label>
-      <button className="btn-secondary">
+      <button className="btn-secondary" type="button" onClick={onFilters ?? (() => setNotice(true))}>
         <Filter size={17} />
         Filtri
       </button>
+      {notice && <ToastMessage tone="info" title="Funzione in sviluppo" detail="I filtri avanzati saranno disponibili nelle prossime viste salvate." onClose={() => setNotice(false)} />}
     </div>
   );
 }
@@ -140,13 +154,16 @@ export function EmptyState({
   title,
   detail,
   actionLabel,
-  icon: Icon = FileUp
+  icon: Icon = FileUp,
+  onAction
 }: {
   title: string;
   detail: string;
   actionLabel?: string;
   icon?: ElementType;
+  onAction?: () => void;
 }) {
+  const [notice, setNotice] = useState(false);
   return (
     <div className="rounded-2xl border border-dashed border-line bg-white p-8 text-center">
       <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-finance-light text-finance">
@@ -154,7 +171,8 @@ export function EmptyState({
       </div>
       <h3 className="mt-4 text-base font-semibold text-ink">{title}</h3>
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-stone-600">{detail}</p>
-      {actionLabel && <button className="btn-primary mt-5">{actionLabel}</button>}
+      {actionLabel && <button className="btn-primary mt-5" type="button" onClick={onAction ?? (() => setNotice(true))}>{actionLabel}</button>}
+      {notice && <ToastMessage tone="info" title="Funzione in sviluppo" detail="Questa azione non è ancora collegata al flusso operativo." onClose={() => setNotice(false)} />}
     </div>
   );
 }
@@ -182,9 +200,19 @@ export function ErrorState({ title = "Serve attenzione", detail }: { title?: str
   );
 }
 
-export function QuickActionButton({ icon: Icon, label }: { icon: ElementType; label: string }) {
+export function QuickActionButton({
+  icon: Icon,
+  label,
+  onClick,
+  disabled = false
+}: {
+  icon: ElementType;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
   return (
-    <button className="group inline-flex min-h-12 items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 text-sm font-semibold text-ink shadow-card transition hover:-translate-y-0.5 hover:border-field hover:text-field">
+    <button type="button" onClick={onClick} disabled={disabled} className="group inline-flex min-h-12 items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 text-sm font-semibold text-ink shadow-card transition hover:-translate-y-0.5 hover:border-field hover:text-field disabled:cursor-not-allowed disabled:opacity-50">
       <span className="grid h-9 w-9 place-items-center rounded-lg bg-field/10 text-field transition group-hover:bg-field group-hover:text-white">
         <Icon size={18} />
       </span>
@@ -198,12 +226,14 @@ export function ReportCard({
   description,
   icon: Icon,
   action = "Apri report",
+  onAction,
   children
 }: {
   title: string;
   description: string;
   icon: ElementType;
   action?: string;
+  onAction: () => void;
   children?: ReactNode;
 }) {
   return (
@@ -218,12 +248,12 @@ export function ReportCard({
         </div>
       </div>
       {children && <div className="mt-4">{children}</div>}
-      <button className="btn-secondary mt-5 w-full">{action}</button>
+      <button className="btn-secondary mt-5 w-full" type="button" onClick={onAction}>{action}</button>
     </div>
   );
 }
 
-export function FileUploadCard() {
+export function FileUploadCard({ onSelect }: { onSelect: () => void }) {
   return (
     <div className="rounded-2xl border border-dashed border-field/40 bg-field/5 p-5">
       <div className="flex items-start gap-3">
@@ -233,8 +263,35 @@ export function FileUploadCard() {
         <div>
           <p className="font-semibold text-ink">Carica documento</p>
           <p className="mt-1 text-sm leading-6 text-stone-600">PDF, foto o ricevute. La validazione sicura resta lato server.</p>
-          <button className="btn-primary mt-4">Seleziona file</button>
+          <button className="btn-primary mt-4" type="button" onClick={onSelect}>Seleziona file</button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+export function ActionButton({
+  children,
+  className = "btn-secondary",
+  type = "button",
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button type={type} className={className} {...props}>
+      {children}
+    </button>
+  );
+}
+
+export function ToastMessage({ tone = "info", title, detail, onClose }: { tone?: StatusTone; title: string; detail?: string; onClose: () => void }) {
+  return (
+    <div className={`fixed right-4 top-4 z-50 max-w-sm rounded-2xl border p-4 text-sm shadow-soft ${toneClasses[tone]}`}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="font-bold">{title}</p>
+          {detail && <p className="mt-1 leading-5">{detail}</p>}
+        </div>
+        <button type="button" onClick={onClose} className="rounded-lg px-2 py-1 font-bold hover:bg-white/60" aria-label="Chiudi notifica">×</button>
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ import {
   WalletCards
 } from "lucide-react";
 import type { ElementType } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
 import { BrandMark } from "../components/brand/BrandMark";
 import { DesktopBackendNotice } from "../components/DesktopBackendNotice";
@@ -61,15 +61,16 @@ const sections: Array<{ title: string; items: Array<{ key: ModuleKey; to: string
 ];
 
 const quickActions = [
-  ["Nuova spesa", Receipt],
-  ["Nuova giornata", WalletCards],
-  ["Carica documento", Upload],
-  ["Nuova vendita", Landmark]
+  ["Nuova spesa", Receipt, "/spese?action=new"],
+  ["Nuova giornata", WalletCards, "/giornate?action=new"],
+  ["Carica documento", Upload, "/documenti?action=new"],
+  ["Nuova vendita", Landmark, "/vendite?action=new"]
 ] as const;
 
 export function Layout() {
   const auth = useAuth();
   const farm = useFarm();
+  const navigate = useNavigate();
   const visibleSections = sections
     .map((section) => ({ ...section, items: section.items.filter((item) => canView(auth.role, item.key)) }))
     .filter((section) => section.items.length > 0);
@@ -140,7 +141,7 @@ export function Layout() {
             <div className="flex items-center gap-2">
               <StatusBadge tone="success">Sistema operativo</StatusBadge>
               <RoleBadge role={auth.role} />
-              <button className="hidden rounded-xl border border-line bg-white px-3 py-2 text-sm font-semibold text-field shadow-sm transition hover:border-field md:inline-flex">
+              <button type="button" onClick={() => navigate("/spese?action=new")} className="hidden rounded-xl border border-line bg-white px-3 py-2 text-sm font-semibold text-field shadow-sm transition hover:border-field md:inline-flex">
                 Azioni rapide
               </button>
               <button onClick={auth.logout} className="rounded-xl border border-line bg-white p-2.5 text-stone-600 transition hover:border-danger hover:text-danger" title="Esci" aria-label="Esci">
@@ -155,8 +156,8 @@ export function Layout() {
         </div>
 
         <div className="fixed bottom-20 right-4 z-20 flex flex-col gap-2 md:hidden">
-          {quickActions.map(([label, Icon]) => (
-            <button key={label} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-field px-3.5 py-2 text-xs font-bold text-white shadow-soft">
+          {quickActions.map(([label, Icon, to]) => (
+            <button key={label} type="button" onClick={() => navigate(to)} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-field px-3.5 py-2 text-xs font-bold text-white shadow-soft">
               <Icon size={16} />
               {label}
             </button>

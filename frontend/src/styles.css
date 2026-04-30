@@ -39,6 +39,10 @@ button, input, select, textarea {
     @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-line bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-field hover:text-field disabled:cursor-not-allowed disabled:opacity-60;
   }
 
+  .btn-danger {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-800 shadow-sm transition hover:border-red-500 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
   .card {
     @apply rounded-2xl border border-line bg-white shadow-card;
   }

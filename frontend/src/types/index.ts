@@ -34,6 +34,37 @@ export type Worker = {
   notes?: string | null;
 };
 
+export type Field = {
+  id: string;
+  name: string;
+  cadastral_reference?: string | null;
+  area_hectares?: string | number | null;
+};
+
+export type Crop = {
+  id: string;
+  name: string;
+  season?: string | null;
+  field_id?: string | null;
+};
+
+export type Workday = {
+  id: string;
+  work_date: string;
+  description?: string | null;
+  is_closed: boolean;
+};
+
+export type WorkdayEntry = {
+  id: string;
+  workday_id: string;
+  worker_id: string;
+  crop_id?: string | null;
+  hours: string | number;
+  hourly_rate?: string | number | null;
+  activity?: string | null;
+};
+
 export type Expense = {
   id: string;
   expense_date: string;
@@ -42,6 +73,24 @@ export type Expense = {
   description?: string | null;
   supplier_id?: string | null;
   crop_id?: string | null;
+};
+
+export type Document = {
+  id: string;
+  title: string;
+  document_type: string;
+  status: "REQUESTED" | "RECEIVED" | "MISSING" | "ARCHIVED";
+  original_file_name?: string | null;
+  mime_type?: string | null;
+  size_bytes?: number | null;
+  notes?: string | null;
+};
+
+export type Page<T> = {
+  items: T[];
+  limit: number;
+  offset: number;
+  total: number;
 };
 
 export type Sale = {

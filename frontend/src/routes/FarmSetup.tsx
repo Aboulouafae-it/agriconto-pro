@@ -1,12 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Save } from "lucide-react";
-import type { InputHTMLAttributes } from "react";
+import { useState, type InputHTMLAttributes } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { apiClient } from "../api/client";
 import { PageHeader } from "../components/PageHeader";
-import { EmptyState, ErrorState, LoadingState, StatusBadge } from "../components/design-system";
+import { EmptyState, ErrorState, LoadingState, StatusBadge, ToastMessage } from "../components/design-system";
 import { useFarm } from "../features/useFarm";
 import type { Farm } from "../types";
 
@@ -27,6 +27,7 @@ type FarmForm = z.infer<typeof farmSchema>;
 export function FarmSetup() {
   const farm = useFarm();
   const queryClient = useQueryClient();
+  const [toast, setToast] = useState<string | null>(null);
   const form = useForm<FarmForm>({
     resolver: zodResolver(farmSchema),
     values: {
@@ -43,12 +44,18 @@ export function FarmSetup() {
   });
 
   const createFarm = useMutation({
-    mutationFn: (values: FarmForm) => apiClient.createFarm(clean(values)),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["farms"] })
+    mutationFn: (values: FarmForm) => farm.currentFarmId ? apiClient.updateFarm(farm.currentFarmId, clean(values)) : apiClient.createFarm(clean(values)),
+    onSuccess: async () => {
+      setToast("Profilo azienda salvato correttamente.");
+      await queryClient.invalidateQueries({ queryKey: ["farms"] });
+      await queryClient.invalidateQueries({ queryKey: ["report"] });
+      await queryClient.invalidateQueries({ queryKey: ["analytics"] });
+    }
   });
 
   return (
     <section className="space-y-6">
+      {toast && <ToastMessage tone="success" title="Salvataggio completato" detail={toast} onClose={() => setToast(null)} />}
       <PageHeader
         eyebrow="Profilo farm"
         title="Configurazione azienda"
@@ -81,7 +88,7 @@ export function FarmSetup() {
         <div className="sm:col-span-2">
           <button className="btn-primary" disabled={createFarm.isPending}>
             <Save size={17} />
-            {farm.currentFarm ? "Salva nuova azienda" : "Crea azienda"}
+            {farm.currentFarm ? "Salva modifiche" : "Crea azienda"}
           </button>
         </div>
       </form>

@@ -109,14 +109,14 @@ export function Treemap({ data }: { data: ChartPoint[] }) {
   return (
     <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
       {data.slice(0, 8).map((item, index) => (
-        <button
+        <div
           key={`${item.label}-${index}`}
           className="rounded-xl border border-line bg-gradient-to-br from-field/10 to-finance/5 p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-field hover:bg-field/15"
           style={{ minHeight: `${Math.max(72, 72 + (numeric(item.value) / max) * 70)}px` }}
         >
           <p className="text-sm font-bold text-ink">{String(item.label)}</p>
           <p className="mt-2 text-xs text-stone-600"><MoneyValue value={item.value} /></p>
-        </button>
+        </div>
       ))}
     </div>
   );

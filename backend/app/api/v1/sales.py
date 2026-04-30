@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 
 from app.api.deps import CurrentUser, DbDep
-from app.api.v1.resource_helpers import create_resource, get_resource, list_resource, patch_resource
+from app.api.v1.resource_helpers import create_resource, delete_resource, get_resource, list_resource, patch_resource
 from app.models import Sale
 from app.schemas.common import Page, PaginationParams
 from app.schemas.domain import SaleIn, SaleOut, SaleUpdate
@@ -36,3 +36,7 @@ def get_sale(farm_id: UUID, sale_id: UUID, db: DbDep, current_user: CurrentUser)
 def patch_sale(farm_id: UUID, sale_id: UUID, payload: SaleUpdate, db: DbDep, current_user: CurrentUser):
     return patch_resource(db, current_user, farm_id, sale_id, Sale, payload)
 
+
+@router.delete("/{sale_id}", status_code=204)
+def delete_sale(farm_id: UUID, sale_id: UUID, db: DbDep, current_user: CurrentUser):
+    delete_resource(db, current_user, farm_id, sale_id, Sale)

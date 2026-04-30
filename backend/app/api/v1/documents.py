@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import Response
 
 from app.api.deps import CurrentUser, DbDep
-from app.api.v1.resource_helpers import get_resource, list_resource
+from app.api.v1.resource_helpers import delete_resource, get_resource, list_resource
 from app.core.audit import audit_create, audit_custom_event
 from app.core.exceptions import ValidationError
 from app.core.permissions import ensure_can_create, ensure_can_read, require_farm_access_to_entity
@@ -136,3 +136,8 @@ def download_document(farm_id: UUID, document_id: UUID, db: DbDep, current_user:
         media_type="application/octet-stream",
         headers={"Content-Disposition": f'attachment; filename="{download_name}"'},
     )
+
+
+@router.delete("/{document_id}", status_code=204)
+def delete_document(farm_id: UUID, document_id: UUID, db: DbDep, current_user: CurrentUser):
+    delete_resource(db, current_user, farm_id, document_id, Document)

@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 
 from app.api.deps import CurrentUser, DbDep
-from app.api.v1.resource_helpers import create_resource, get_resource, list_resource, patch_resource
+from app.api.v1.resource_helpers import create_resource, delete_resource, get_resource, list_resource, patch_resource
 from app.models import Expense
 from app.schemas.common import Page, PaginationParams
 from app.schemas.domain import ExpenseIn, ExpenseOut, ExpenseUpdate
@@ -38,3 +38,7 @@ def patch_expense(
 ):
     return patch_resource(db, current_user, farm_id, expense_id, Expense, payload)
 
+
+@router.delete("/{expense_id}", status_code=204)
+def delete_expense(farm_id: UUID, expense_id: UUID, db: DbDep, current_user: CurrentUser):
+    delete_resource(db, current_user, farm_id, expense_id, Expense)
