@@ -24,6 +24,12 @@ test.describe("AgriConto Pro actionable UI", () => {
   test("reports preview and analytics saved view actions respond", async ({ page }) => {
     await page.goto("/report");
     await expect(page.getByRole("button", { name: "Anteprima" }).first()).toBeVisible();
+    const pdfResponsePromise = page.waitForResponse((response) =>
+      response.url().includes("/reports/monthly/pdf") && response.status() === 200
+    );
+    await page.getByRole("button", { name: "Esporta PDF" }).first().click();
+    const pdfResponse = await pdfResponsePromise;
+    expect(pdfResponse.headers()["content-type"]).toContain("application/pdf");
 
     await page.goto("/statistiche");
     await page.getByRole("button", { name: "Salva vista" }).click();

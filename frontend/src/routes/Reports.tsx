@@ -40,7 +40,7 @@ const reports: ReportDefinition[] = [
     name: "monthly",
     title: "Report Gestionale Mensile",
     icon: BarChart3,
-    roles: "Owner, Commercialista",
+    roles: "Titolare, Commercialista",
     tone: "standard",
     description: "Sintesi mensile di ricavi, spese, risultato netto, saldi e documenti mancanti.",
     sections: ["Sintesi", "Ricavi", "Spese", "Saldi", "Documenti"]
@@ -49,7 +49,7 @@ const reports: ReportDefinition[] = [
     name: "workers",
     title: "Report Lavoratori e Compensi",
     icon: Users,
-    roles: "Owner, Consulente lavoro",
+    roles: "Titolare, Consulente del lavoro",
     tone: "labor",
     description: "Giornate, compensi maturati, anticipi, pagamenti e saldi residui.",
     sections: ["Lavoratori", "Compensi", "Anticipi", "Pagamenti"]
@@ -58,7 +58,7 @@ const reports: ReportDefinition[] = [
     name: "crops",
     title: "Report Redditività Colture",
     icon: Leaf,
-    roles: "Owner, Commercialista",
+    roles: "Titolare, Commercialista",
     tone: "standard",
     description: "Margine stimato per coltura con ricavi, costi e costo del lavoro collegato.",
     sections: ["Colture", "Ricavi", "Costi", "Margini"]
@@ -67,7 +67,7 @@ const reports: ReportDefinition[] = [
     name: "expenses",
     title: "Report Spese",
     icon: FileSpreadsheet,
-    roles: "Owner, Commercialista",
+    roles: "Titolare, Commercialista",
     tone: "standard",
     description: "Elenco amministrativo delle spese per categoria, fornitore e documento.",
     sections: ["Categorie", "Fornitori", "Documenti", "Movimenti"]
@@ -76,7 +76,7 @@ const reports: ReportDefinition[] = [
     name: "sales",
     title: "Report Vendite e Incassi",
     icon: FileText,
-    roles: "Owner, Commercialista",
+    roles: "Titolare, Commercialista",
     tone: "standard",
     description: "Vendite, clienti, importi, riferimenti fattura e incassi gestionali.",
     sections: ["Vendite", "Clienti", "Incassi", "Movimenti"]
@@ -85,7 +85,7 @@ const reports: ReportDefinition[] = [
     name: "missing-documents",
     title: "Report Documenti Mancanti",
     icon: FileWarning,
-    roles: "Owner, Commercialista",
+    roles: "Titolare, Commercialista",
     tone: "warning",
     description: "Spese senza documento, richieste aperte e dati lavoratori incompleti.",
     sections: ["Criticità", "Spese", "Lavoratori", "Richieste"]
@@ -94,7 +94,7 @@ const reports: ReportDefinition[] = [
     name: "accountant-pack",
     title: "Pacchetto Commercialista",
     icon: BriefcaseBusiness,
-    roles: "Owner, Commercialista",
+    roles: "Titolare, Commercialista",
     tone: "flagship",
     description: "Export premium con riepiloghi, movimenti, documenti, audit e checklist finale.",
     sections: ["Copertina", "Sintesi", "Spese", "Vendite", "Lavoratori", "Audit"]
@@ -103,7 +103,7 @@ const reports: ReportDefinition[] = [
     name: "annual",
     title: "Riepilogo Annuale",
     icon: CalendarDays,
-    roles: "Owner, Commercialista",
+    roles: "Titolare, Commercialista",
     tone: "standard",
     description: "Vista annuale per analisi interna e confronto con il professionista.",
     sections: ["Anno", "Trend", "Colture", "Documenti"]
@@ -112,7 +112,7 @@ const reports: ReportDefinition[] = [
     name: "document-index",
     title: "Indice Documenti",
     icon: FileArchive,
-    roles: "Owner, Commercialista",
+    roles: "Titolare, Commercialista",
     tone: "standard",
     description: "Indice archivistico dei documenti caricati e dei riferimenti collegati.",
     sections: ["Archivio", "Collegamenti", "Formati", "Note"]
@@ -121,7 +121,7 @@ const reports: ReportDefinition[] = [
     name: "audit-summary",
     title: "Riepilogo Log di Audit",
     icon: History,
-    roles: "Owner, Commercialista",
+    roles: "Titolare, Commercialista",
     tone: "standard",
     description: "Eventi rilevanti, esportazioni e riferimenti per la tracciabilità.",
     sections: ["Eventi", "Utenti", "Entità", "Export"]
@@ -140,7 +140,7 @@ export function Reports() {
     <section className="space-y-6">
       <PageHeader
         eyebrow="Centro report"
-        title="Report amministrativi e PDF-ready"
+        title="Report amministrativi e PDF professionali"
         subtitle="Documenti gestionali con copertina, QR di verifica, checksum, audit log e layout A4 pronto per stampa o salvataggio PDF."
         actions={<StatusBadge tone="success">Accesso sicuro</StatusBadge>}
       />
@@ -217,10 +217,8 @@ function ReportTile({
 
   const exportPdf = useMutation({
     mutationFn: () => apiClient.reportPdf(farmId!, report.name, query),
-    onSuccess: (blob) => {
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank", "noopener,noreferrer");
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    onSuccess: ({ blob, filename }) => {
+      downloadBlob(blob, filename);
     }
   });
 
@@ -242,7 +240,7 @@ function ReportTile({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-lg font-bold text-ink">{report.title}</h3>
-              {isFlagship && <StatusBadge tone="success">Export flagship</StatusBadge>}
+              {isFlagship && <StatusBadge tone="success">Export principale</StatusBadge>}
             </div>
             <p className="mt-1 text-sm leading-6 text-stone-600">{report.description}</p>
           </div>
@@ -265,7 +263,7 @@ function ReportTile({
         <div className="mt-5 rounded-2xl border border-line bg-white p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="text-sm font-bold text-ink">Anteprima dati</p>
-            <StatusBadge tone="info">JSON server-side</StatusBadge>
+            <StatusBadge tone="info">Dati verificati dal server</StatusBadge>
           </div>
           {preview.isLoading && <LoadingState label="Preparazione anteprima..." />}
           {preview.isError && <ErrorState detail="Report non disponibile per il ruolo corrente o per questa azienda." />}
@@ -279,7 +277,12 @@ function ReportTile({
           )}
         </div>
 
-        {exportPdf.isError && <div className="mt-4"><ErrorState detail="Esportazione non riuscita. Verifica permessi e periodo selezionato." /></div>}
+        {exportPdf.isError && <div className="mt-4"><ErrorState detail="Non è stato possibile generare il PDF. Riprova." /></div>}
+        {exportPdf.isSuccess && (
+          <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-800">
+            PDF generato correttamente.
+          </div>
+        )}
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <button className="btn-secondary" onClick={() => preview.refetch()} disabled={!farmId || preview.isFetching}>
@@ -288,12 +291,23 @@ function ReportTile({
           </button>
           <button className="btn-primary" onClick={() => exportPdf.mutate()} disabled={!farmId || exportPdf.isPending}>
             <Download size={17} />
-            {exportPdf.isPending ? "Generazione..." : "Esporta PDF"}
+            {exportPdf.isPending ? "Generazione PDF..." : "Esporta PDF"}
           </button>
         </div>
       </div>
     </article>
   );
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
 function InfoPill({ icon: Icon, label, value }: { icon: ElementType; label: string; value: string }) {
@@ -316,4 +330,3 @@ function PreviewMetric({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-

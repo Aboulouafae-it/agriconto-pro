@@ -40,7 +40,7 @@ export function roleLabel(role: Role): string {
   return {
     OWNER: "Titolare",
     ACCOUNTANT: "Commercialista",
-    LABOR_CONSULTANT: "Consulente lavoro",
+    LABOR_CONSULTANT: "Consulente del lavoro",
     WORKER: "Lavoratore"
   }[role];
 }

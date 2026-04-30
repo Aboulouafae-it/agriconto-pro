@@ -1,11 +1,12 @@
 from uuid import UUID
 
 from fastapi import APIRouter
-from fastapi.responses import HTMLResponse
+from fastapi.responses import Response
 
 from app.api.deps import CurrentUser, DbDep
 from app.schemas.domain import ReportOut
 from app.reports.report_exporter import REPORT_DEFINITIONS, ReportExporter
+from app.reports.pdf_renderer import html_to_pdf_bytes
 from app.reports.services import ReportService
 
 router = APIRouter(prefix="/farms/{farm_id}/reports", tags=["reports"])
@@ -61,7 +62,7 @@ def audit_summary_report(farm_id: UUID, db: DbDep, current_user: CurrentUser):
     return {"farm_id": farm_id, "report": "audit_summary", "data": ReportService(db).audit_summary(farm_id, current_user)}
 
 
-@router.get("/{report_type}/pdf", response_class=HTMLResponse)
+@router.get("/{report_type}/pdf")
 def report_pdf(
     farm_id: UUID,
     report_type: str,
@@ -71,13 +72,16 @@ def report_pdf(
     month: int | None = None,
 ):
     if report_type not in REPORT_DEFINITIONS:
-        return HTMLResponse("<h1>Report non supportato</h1>", status_code=404)
+        return Response("Report non supportato", status_code=404, media_type="text/plain")
     html, export = ReportExporter(db).export_html(report_type, farm_id, current_user, year, month)
-    filename = f"agriconto-{report_type}-{export.id}.html"
-    return HTMLResponse(
-        html,
+    title = REPORT_DEFINITIONS[report_type]["title"]
+    pdf = html_to_pdf_bytes(html, title=title, report_id=str(export.id))
+    filename = f"agriconto-{report_type}-{export.id}.pdf"
+    return Response(
+        pdf,
+        media_type="application/pdf",
         headers={
-            "Content-Disposition": f'inline; filename="{filename}"',
+            "Content-Disposition": f'attachment; filename="{filename}"',
             "X-Report-Id": str(export.id),
             "X-Report-Checksum": export.checksum or "",
         },

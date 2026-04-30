@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from app.reports.components.qr import checksum, qr_payload, verification_svg
+from app.reports.pdf_renderer import html_to_pdf_bytes
 from app.reports.report_exporter import REPORT_DEFINITIONS
 
 
@@ -41,3 +42,14 @@ def test_verification_svg_is_inline_and_deterministic() -> None:
     assert "<svg" in first
     assert digest not in first
 
+
+def test_pdf_renderer_returns_non_empty_pdf_with_title() -> None:
+    pdf = html_to_pdf_bytes(
+        "<h1>Report Gestionale Mensile</h1><p>Azienda Agricola Demo</p>",
+        title="Report Gestionale Mensile",
+        report_id=str(uuid4()),
+    )
+
+    assert pdf.startswith(b"%PDF-1.4")
+    assert len(pdf) > 1000
+    assert b"Report Gestionale Mensile" in pdf

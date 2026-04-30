@@ -1,6 +1,6 @@
 # Reports
 
-AgriConto Pro reports are JSON-first and HTML/PDF-ready preparation tools for farmers, commercialisti and labor consultants. They organize source data; they do not calculate official tax, IVA, payroll, INPS, INAIL or filing obligations.
+AgriConto Pro reports are JSON-first management documents for farmers, commercialisti and labor consultants. They organize source data; they do not calculate official tax, IVA, payroll, INPS, INAIL or filing obligations.
 
 ## Security Rules
 
@@ -38,9 +38,24 @@ AgriConto Pro reports are JSON-first and HTML/PDF-ready preparation tools for fa
 - `GET /api/v1/farms/{farm_id}/reports/audit-summary`
 - `GET /api/v1/farms/{farm_id}/reports/audit-summary/pdf`
 
-## Print/PDF-Ready Design System
+## PDF Generation Method
 
-The server renders professional A4 HTML documents with embedded print CSS. The browser can print or save these documents as PDF today; a dedicated binary PDF renderer can be added later without changing report data contracts.
+The server renders professional A4 HTML report templates first, then converts the same server-side HTML to a PDF response with a dependency-light internal renderer. This avoids fragile system dependencies in the Debian desktop package while keeping report contracts stable.
+
+Future renderer upgrade options:
+
+- WeasyPrint for richer CSS paged media if system dependencies are bundled;
+- Chromium/Playwright PDF for pixel-perfect HTML output;
+- ReportLab for more complex table control.
+
+The current `/pdf` endpoints return:
+
+- `Content-Type: application/pdf`
+- `Content-Disposition: attachment; filename="agriconto-...pdf"`
+- `X-Report-Id`
+- `X-Report-Checksum`
+
+## Report Design System
 
 Every print-ready export includes:
 

@@ -78,8 +78,8 @@ npm run migrate        # runs Alembic migrations, after backend env setup
 npm run seed           # creates/repairs the demo farm user
 ```
 
-If the login page says `Backend non raggiungibile`, the frontend is running but
-FastAPI is not reachable at the configured `VITE_API_URL`. In this workspace the
+If the login page says the local engine is unavailable, the frontend is running
+but FastAPI is not reachable at the configured `VITE_API_URL`. In this workspace the
 frontend local config points to `http://localhost:8001/api/v1`, because port
 `8000` may already be used by another service. Start the backend with Docker
 Compose on the matching port or run PostgreSQL plus FastAPI locally on that port.
@@ -149,11 +149,27 @@ npm run desktop:pack
 ```
 
 Outputs are written to `frontend/release/` and are intentionally ignored by Git.
+The Debian package and AppImage use the product identity `AgriConto Pro`, app id
+`com.agriconto.pro` and executable/package name `agriconto-pro`.
 
 Current desktop limitation: the packaged app includes backend source files, but a
 production-ready embedded Python runtime is not bundled yet. For installation on a
 fresh Linux machine, the next release step is to package a controlled Python runtime
 or backend binary sidecar plus a local database/runtime strategy.
+
+## PDF Report Export
+
+Report PDF endpoints require authentication and farm permission. Example:
+
+```bash
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  http://localhost:8001/api/v1/farms/FARM_ID/reports/accountant-pack/pdf \
+  --output accountant-pack.pdf
+```
+
+Available report names include `monthly`, `expenses`, `sales`, `workers`, `crops`,
+`missing-documents` and `accountant-pack`. The backend returns `application/pdf`,
+safe `Content-Disposition` headers, an `X-Report-Id` and an `X-Report-Checksum`.
 
 ## Migrations
 

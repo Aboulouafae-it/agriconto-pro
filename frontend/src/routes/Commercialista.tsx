@@ -29,10 +29,15 @@ export function Commercialista() {
   });
   const pack = useMutation({
     mutationFn: () => apiClient.reportPdf(farm.currentFarmId!, "accountant-pack"),
-    onSuccess: (blob) => {
+    onSuccess: ({ blob, filename }) => {
       const url = URL.createObjectURL(blob);
-      window.open(url, "_blank", "noopener,noreferrer");
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 30_000);
     }
   });
 
@@ -64,7 +69,7 @@ export function Commercialista() {
           <p className="mt-1">Alcuni riepiloghi non sono disponibili per il ruolo corrente, ma la struttura del pacchetto resta consultabile.</p>
         </div>
       )}
-      {pack.isError && <ErrorState title="Export non riuscito" detail="Non è stato possibile generare il PDF. Verifica i permessi e riprova." />}
+      {pack.isError && <ErrorState title="Export non riuscito" detail="Non è stato possibile generare il PDF. Riprova." />}
       {pack.data && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
           Pacchetto commercialista generato. Il documento include QR, checksum e audit log.

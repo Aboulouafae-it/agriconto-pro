@@ -31,13 +31,12 @@ export function DesktopBackendNotice() {
       <div className="mx-auto flex max-w-7xl items-start gap-3">
         <AlertTriangle className="mt-0.5 shrink-0 text-amber-700" size={18} />
         <div>
-          <p className="font-semibold">Servizio dati non raggiungibile</p>
+          <p className="font-semibold">Motore locale non disponibile</p>
           <p className="mt-0.5 leading-6">
-            L'applicazione desktop è aperta, ma il servizio locale AgriConto Pro non risponde. Avvia il backend locale o Docker Compose e riprova.
+            Il motore locale di AgriConto Pro non è disponibile. Riavvia l'applicazione o contatta il supporto.
           </p>
         </div>
       </div>
     </div>
   );
 }
-

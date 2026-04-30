@@ -46,8 +46,9 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
           : JSON.stringify(options.body)
         : undefined
     });
-  } catch {
-    throw new ApiError(0, `Backend non raggiungibile. Verifica che l'API sia avviata su ${API_URL}.`);
+  } catch (error) {
+    if (import.meta.env.DEV) console.warn("AgriConto API request failed", { path, error });
+    throw new ApiError(0, "Il motore locale di AgriConto Pro non è disponibile. Riavvia l'applicazione o contatta il supporto.");
   }
 
   if (response.status === 401 && !options.suppressUnauthorizedEvent) {
@@ -69,8 +70,8 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
 export function safeErrorMessage(status: number): string {
   if (status === 401) return "Sessione scaduta. Accedi di nuovo.";
   if (status === 403) return "Non hai i permessi per questa operazione.";
-  if (status >= 500) return "Servizio non disponibile. Riprova piu tardi.";
-  return "Richiesta non riuscita. Controlla i dati inseriti.";
+  if (status >= 500) return "Servizio non disponibile. Riprova più tardi.";
+  return "Non è stato possibile completare l'operazione. Riprova tra poco.";
 }
 
 export const apiClient = {
@@ -134,13 +135,26 @@ export const apiClient = {
     api<AnalyticsResponse<T>>(`/farms/${farmId}/analytics/${section}${query}`),
   reportPdf: async (farmId: string, name: string, query = "") => {
     const token = getToken();
-    const response = await fetch(`${API_URL}/farms/${farmId}/reports/${name}/pdf${query}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${API_URL}/farms/${farmId}/reports/${name}/pdf${query}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+    } catch (error) {
+      if (import.meta.env.DEV) console.warn("AgriConto PDF request failed", { name, error });
+      throw new ApiError(0, "Il motore locale di AgriConto Pro non è disponibile. Riavvia l'applicazione o contatta il supporto.");
+    }
     if (!response.ok) {
       throw new ApiError(response.status, safeErrorMessage(response.status));
     }
-    return response.blob();
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/pdf")) {
+      if (import.meta.env.DEV) console.warn("Unexpected report content type", contentType);
+      throw new ApiError(500, "Non è stato possibile generare il PDF. Riprova.");
+    }
+    const disposition = response.headers.get("content-disposition") ?? "";
+    const filename = disposition.match(/filename="?([^"]+)"?/)?.[1] ?? `agriconto-${name}.pdf`;
+    return { blob: await response.blob(), filename };
   },
   uploadDocument: (farmId: string, formData: FormData) =>
     api(`/farms/${farmId}/documents/upload`, {

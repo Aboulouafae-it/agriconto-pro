@@ -1,7 +1,7 @@
 {
   "name": "agriconto-pro",
   "version": "0.1.0",
-  "description": "Italian agricultural accounting and farm management desktop app.",
+  "description": "Italian agricultural accounting and farm management platform",
   "author": "AgriConto Pro",
   "homepage": "https://agriconto.local",
   "private": true,
@@ -51,6 +51,8 @@
       }
     ],
     "linux": {
+      "executableName": "agriconto-pro",
+      "artifactName": "agriconto-pro-${version}-${arch}.${ext}",
       "target": [
         "deb",
         "AppImage"

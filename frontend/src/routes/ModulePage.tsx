@@ -97,7 +97,7 @@ export function ModulePage({ module, title, subtitle, columns }: Props) {
       closeForm();
       await invalidateRelated(queryClient, farm.currentFarmId);
     },
-    onError: (error) => setToast({ tone: "danger", title: "Operazione non riuscita", detail: userError(error) })
+    onError: (error) => setToast({ tone: "danger", title: "Operazione non completata", detail: userError(error) })
   });
 
   const deleteMutation = useMutation({
@@ -328,7 +328,7 @@ function moduleHero(module: Module, helpers: { openCreate: () => void; setToast:
     return (
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard label="Superfici" value="ha" icon={MapPin} tone="success" />
-        <StatCard label="Catasto" value="Metadata" icon={Leaf} tone="info" />
+        <StatCard label="Catasto" value="Metadati" icon={Leaf} tone="info" />
         <StatCard label="Colture" value="Collegate" icon={FileWarning} tone="warning" />
       </div>
     );
@@ -553,7 +553,16 @@ function toRow(module: Module, item: RecordItem, handlers: { onEdit: () => void;
     return { id: row.id, cells: [<DateDisplay value={row.sale_date} />, row.description ?? "Vendita", row.crop_id ? "Coltura collegata" : "-", <MoneyValue value={row.amount} />, actionCells] };
   }
   const row = item as Document;
-  return { id: row.id, cells: [row.title, row.document_type, <StatusBadge tone={row.status === "RECEIVED" ? "success" : "warning"}>{row.status}</StatusBadge>, row.original_file_name ?? "-", actionCells] };
+  return { id: row.id, cells: [row.title, row.document_type, <StatusBadge tone={row.status === "RECEIVED" ? "success" : "warning"}>{documentStatusLabel(row.status)}</StatusBadge>, row.original_file_name ?? "-", actionCells] };
+}
+
+function documentStatusLabel(status: Document["status"]) {
+  return {
+    RECEIVED: "Ricevuto",
+    REQUESTED: "Richiesto",
+    MISSING: "Mancante",
+    ARCHIVED: "Archiviato"
+  }[status];
 }
 
 function filterRecords(items: RecordItem[], search: string) {

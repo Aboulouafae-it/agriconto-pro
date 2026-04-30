@@ -2,6 +2,7 @@ import { BriefcaseBusiness, KeyRound, Leaf, Lock, ShieldCheck, Tags, Users } fro
 import { useAuth } from "../auth/AuthProvider";
 import { PageHeader } from "../components/PageHeader";
 import { ConfirmDialog, RoleBadge, StatusBadge } from "../components/design-system";
+import { roleLabel } from "../lib/permissions";
 import type { Role } from "../types";
 
 const roles: Role[] = ["OWNER", "ACCOUNTANT", "LABOR_CONSULTANT", "WORKER"];
@@ -47,7 +48,7 @@ export function Settings() {
                 onClick={() => auth.setRole(role)}
                 className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${auth.role === role ? "border-field bg-field text-white" : "border-line bg-white text-stone-700 hover:border-field"}`}
               >
-                {role}
+                {roleLabel(role)}
               </button>
             ))}
           </div>
