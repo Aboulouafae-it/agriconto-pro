@@ -2,6 +2,7 @@
 
 ## Identity
 
+- Version updated in relevant package files.
 - App name shown as `AgriConto Pro`.
 - Debian package/executable name is `agriconto-pro`.
 - App ID is `com.agriconto.pro`.
@@ -37,6 +38,14 @@
 - Export creates a `report_exports` row and an audit event.
 - Frontend handles PDF as `Blob`, not JSON.
 - Electron/browser download flow works.
+
+## Documentation
+
+- README updated.
+- Changelog updated.
+- Roadmap updated if scope changed.
+- Security notes updated for auth/RBAC/document/report changes.
+- License present.
 
 ## Product QA
 

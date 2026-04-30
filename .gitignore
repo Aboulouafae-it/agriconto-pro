@@ -20,8 +20,13 @@ frontend/release/
 *.rpm
 .mypy_cache/
 .coverage
+coverage/
 htmlcov/
 *.pyc
 *.log
+*.sqlite
+*.sqlite3
+*.db
+logs/
 frontend/test-results/
 frontend/playwright-report/

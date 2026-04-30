@@ -164,3 +164,43 @@ Production hardening still needed:
 - invite flow for members
 - object-level document download authorization
 - encrypted storage option for sensitive documents
+
+## Document Security
+
+Uploaded documents may contain invoices, receipts, worker documents and contracts. The current foundation:
+
+- validates file size and MIME type;
+- stores files outside frontend public folders;
+- stores metadata in the database;
+- serves downloads only through authenticated backend endpoints;
+- avoids exposing local storage paths to the frontend.
+
+Future hardening should add malware scanning, encrypted storage, S3-compatible storage policies and expiring signed download links.
+
+## PDF Export Security
+
+PDF exports:
+
+- require authentication;
+- require farm membership and role permission;
+- create report export metadata;
+- create audit events;
+- return safe filenames;
+- include checksum/report ID metadata;
+- do not include internal storage paths in headers or QR payloads.
+
+## Electron Security
+
+The desktop shell uses:
+
+- `contextIsolation: true`;
+- `nodeIntegration: false`;
+- renderer sandboxing;
+- blocked unsafe navigation;
+- production DevTools disabled.
+
+The renderer does not receive arbitrary filesystem access. Future desktop hardening should add a bundled backend binary, local secret storage and log rotation.
+
+## Responsible Disclosure
+
+Report suspected vulnerabilities privately. Do not publish exploit details, real farm data, worker data, invoices, credentials or tokens in public issues.

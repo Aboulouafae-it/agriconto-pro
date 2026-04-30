@@ -1,47 +1,62 @@
-# Centro Statistiche e Analisi
+# Analytics
 
-Il Centro Statistiche e Analisi e il modulo BI di AgriConto Pro. Non sostituisce commercialista, consulente del lavoro, INPS, INAIL, Agenzia delle Entrate o sistemi ufficiali: organizza dati gestionali e prepara letture verificabili.
+The “Statistiche e Analisi” page is the business intelligence center of AgriConto Pro. It is designed for farm owners, commercialisti and authorized consultants who need deeper operational visibility.
 
-## Sicurezza
+## Current Status
 
-- Ogni endpoint e sotto `/api/v1/farms/{farm_id}/analytics`.
-- `farm_id` resta il confine tenant.
-- Il backend verifica membership e ruolo prima di generare aggregazioni.
-- `OWNER` e `ACCOUNTANT` possono vedere analytics economiche, documentali, colture, campi e confronto.
-- `LABOR_CONSULTANT` puo vedere solo analytics lavoratori/manodopera.
-- `WORKER` non puo vedere analytics aziendali.
-- I filtri sono validati lato server.
-- La UI nasconde sezioni non pertinenti al ruolo, ma non e una misura di sicurezza.
+Implemented foundation:
 
-## Endpoint
+- executive KPI cards;
+- financial analytics;
+- crop profitability;
+- field performance;
+- labor analytics;
+- expense analytics;
+- sales analytics;
+- document completeness;
+- comparison and advanced metrics sections;
+- export of analytics summaries/sections as JSON;
+- role-aware visibility.
 
-- `GET /overview`
-- `GET /financial`
-- `GET /crops`
-- `GET /fields`
-- `GET /labor`
-- `GET /expenses`
-- `GET /sales`
-- `GET /documents`
-- `GET /comparison`
-- `GET /advanced-metrics`
-- `GET /tables`
+Planned:
 
-## Performance
+- deeper drill-down pages;
+- saved analytics views synced server-side;
+- PDF analytical report export;
+- budget vs actual;
+- season-over-season comparisons;
+- anomaly detection and forecasting.
 
-La prima implementazione usa aggregazioni server-side su dati farm-scoped. Quando i volumi cresceranno:
+## Security
 
-- materializzare riepiloghi mensili,
-- paginare tabelle pesanti,
-- aggiungere cache per filtri ricorrenti,
-- separare export asincroni con `report_exports`,
-- creare indici compositi su `farm_id` + date operative.
+- Analytics endpoints live under `/api/v1/farms/{farm_id}/analytics`.
+- `farm_id` remains the tenant boundary.
+- Backend checks membership and role before generating aggregations.
+- Titolare and Commercialista can view financial, crop, field, document and comparison analytics.
+- Consulente del lavoro can view labor-related analytics.
+- Lavoratore must not see farm-wide analytics.
+- Frontend visibility is UX only, not security.
 
-## Estensioni previste
+## Sections
 
-- budget vs consuntivo,
-- anomaly detection,
-- forecast stagionale,
-- mappe con coordinate campo/cliente,
-- snapshot condivisibili,
-- pacchetto analitico inviabile al commercialista.
+- Overview: high-level KPIs and insights.
+- Financial: revenue, expenses and net result.
+- Crops: profitability and cost/revenue contribution.
+- Fields: performance per field and productivity signals.
+- Labor: worker cost, workdays and balances.
+- Expenses: categories, suppliers and missing documents.
+- Sales: customers, products/crops and receivables signals.
+- Documents: completeness, open requests and missing information.
+- Comparison: current vs previous period.
+- Advanced metrics: management ratios and warning indicators.
+- Tables: detailed source data views.
+
+## Performance Notes
+
+The current implementation uses server-side farm-scoped aggregations. Future scale work should add:
+
+- materialized monthly summaries;
+- pagination for heavy tables;
+- caching for common filters;
+- async exports through `report_exports`;
+- composite indexes on `farm_id` and operational dates.
