@@ -1,0 +1,18 @@
+repos:
+  - repo: local
+    hooks:
+      - id: backend-ruff
+        name: backend ruff
+        entry: bash -c 'cd backend && ruff check app scripts'
+        language: system
+        pass_filenames: false
+      - id: backend-tests
+        name: backend security tests
+        entry: bash -c 'cd backend && pytest app/tests'
+        language: system
+        pass_filenames: false
+      - id: frontend-build
+        name: frontend typecheck and build
+        entry: bash -c 'cd frontend && npm run build'
+        language: system
+        pass_filenames: false

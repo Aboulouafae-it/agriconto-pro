@@ -1,0 +1,13 @@
+<svg width="920" height="240" viewBox="0 0 920 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="12" y="12" width="216" height="216" rx="52" fill="#14365D"/>
+  <path d="M66 156C94 156 114 141 121 117C94 116 72 127 62 149C61 153 63 156 66 156Z" fill="#7BC99A"/>
+  <path d="M174 156C146 156 126 141 119 117C146 116 168 127 178 149C179 153 177 156 174 156Z" fill="#2F6F53"/>
+  <path d="M120 164V76" stroke="white" stroke-width="14" stroke-linecap="round"/>
+  <path d="M98 89C107 73 118 64 133 59C138 58 142 61 141 66C137 86 125 99 104 104C100 105 96 93 98 89Z" fill="white"/>
+  <path d="M87 173H153" stroke="white" stroke-width="13" stroke-linecap="round"/>
+  <path d="M80 190H160" stroke="#7BC99A" stroke-width="10" stroke-linecap="round"/>
+  <path d="M72 124H168" stroke="#C47B27" stroke-width="8" stroke-linecap="round" stroke-dasharray="1 16"/>
+  <text x="270" y="112" fill="#14365D" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="58" font-weight="800" letter-spacing="-1">AgriConto</text>
+  <text x="270" y="171" fill="#2F6F53" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="48" font-weight="750">Pro</text>
+  <text x="365" y="171" fill="#667085" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="25" font-weight="600">Contabilità agricola professionale</text>
+</svg>

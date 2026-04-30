@@ -1,0 +1,35 @@
+from enum import StrEnum
+
+
+class FarmRole(StrEnum):
+    OWNER = "OWNER"
+    ACCOUNTANT = "ACCOUNTANT"
+    LABOR_CONSULTANT = "LABOR_CONSULTANT"
+    WORKER = "WORKER"
+
+
+class FarmMemberStatus(StrEnum):
+    INVITED = "INVITED"
+    ACTIVE = "ACTIVE"
+    SUSPENDED = "SUSPENDED"
+
+
+class FiscalProfile(StrEnum):
+    REGIME_SPECIALE_AGRICOLO = "REGIME_SPECIALE_AGRICOLO"
+    REGIME_ORDINARIO = "REGIME_ORDINARIO"
+    REGIME_ESONERO = "REGIME_ESONERO"
+
+
+class DocumentStatus(StrEnum):
+    REQUESTED = "REQUESTED"
+    RECEIVED = "RECEIVED"
+    MISSING = "MISSING"
+    ARCHIVED = "ARCHIVED"
+
+
+class ReportExportStatus(StrEnum):
+    REQUESTED = "REQUESTED"
+    PROCESSING = "PROCESSING"
+    READY = "READY"
+    FAILED = "FAILED"
+    EXPIRED = "EXPIRED"

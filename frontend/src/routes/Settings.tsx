@@ -1,0 +1,89 @@
+import { BriefcaseBusiness, KeyRound, Leaf, Lock, ShieldCheck, Tags, Users } from "lucide-react";
+import { useAuth } from "../auth/AuthProvider";
+import { PageHeader } from "../components/PageHeader";
+import { ConfirmDialog, RoleBadge, StatusBadge } from "../components/design-system";
+import type { Role } from "../types";
+
+const roles: Role[] = ["OWNER", "ACCOUNTANT", "LABOR_CONSULTANT", "WORKER"];
+
+const sections = [
+  ["Profilo azienda", "Dati anagrafici e indirizzo farm.", BriefcaseBusiness],
+  ["Profilo fiscale", "Metadato informativo, nessun calcolo ufficiale.", Leaf],
+  ["Utenti e ruoli", "Inviti, accessi e permessi server-side.", Users],
+  ["Categorie", "Classificazione spese, vendite e documenti.", Tags],
+  ["Sicurezza", "Token, sessione, audit trail e accessi.", Lock],
+  ["Disclaimer legale", "Ruolo di supporto, non sostituzione professionale.", ShieldCheck]
+] as const;
+
+export function Settings() {
+  const auth = useAuth();
+
+  return (
+    <section className="space-y-6">
+      <PageHeader
+        eyebrow="Configurazione"
+        title="Impostazioni"
+        subtitle="Account, azienda, ruoli, categorie e note di sicurezza. I permessi reali sono sempre verificati lato server."
+        actions={<RoleBadge role={auth.role} />}
+      />
+
+      <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="card p-5">
+          <h3 className="section-title">Account</h3>
+          <dl className="mt-4 grid gap-3 text-sm">
+            <div className="flex justify-between gap-4"><dt className="text-stone-500">Nome</dt><dd className="font-semibold">{auth.user?.full_name}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-stone-500">Email</dt><dd className="font-semibold">{auth.user?.email}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-stone-500">Sessione</dt><dd><StatusBadge tone="success">Attiva</StatusBadge></dd></div>
+          </dl>
+        </div>
+
+        <div className="card p-5">
+          <h3 className="section-title">Ruolo UI demo</h3>
+          <p className="helper-text mt-1">Questo selettore mostra solo come cambia l'interfaccia. Non concede permessi reali.</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {roles.map((role) => (
+              <button
+                key={role}
+                onClick={() => auth.setRole(role)}
+                className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${auth.role === role ? "border-field bg-field text-white" : "border-line bg-white text-stone-700 hover:border-field"}`}
+              >
+                {role}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {sections.map(([title, detail, Icon]) => (
+          <div key={title} className="card p-5">
+            <div className="flex items-start gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-finance-light text-finance">
+                <Icon size={20} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-ink">{title}</h3>
+                <p className="mt-1 text-sm leading-6 text-stone-600">{detail}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <ConfirmDialog
+        title="Nota sulla sicurezza frontend"
+        detail="Il token e salvato in localStorage nella fondazione di sviluppo. Questa scelta e documentata e non sostituisce i controlli server-side."
+      />
+
+      <div className="card p-5">
+        <div className="flex items-center gap-2">
+          <KeyRound size={18} className="text-field" />
+          <h3 className="section-title">Accessi sensibili</h3>
+        </div>
+        <p className="helper-text mt-2">
+          Azioni distruttive, inviti e gestione ruoli richiederanno conferme dedicate quando le funzioni saranno abilitate.
+        </p>
+      </div>
+    </section>
+  );
+}
