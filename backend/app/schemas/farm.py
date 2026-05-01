@@ -18,6 +18,7 @@ class FarmCreate(BaseModel):
 
 class FarmRead(FarmCreate):
     id: UUID
+    role: FarmRole | None = None
 
     model_config = {"from_attributes": True}
 

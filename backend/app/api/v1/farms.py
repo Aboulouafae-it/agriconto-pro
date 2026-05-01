@@ -17,9 +17,14 @@ router = APIRouter(prefix="/farms", tags=["farms"])
 
 @router.get("", response_model=list[FarmRead])
 def list_farms(db: DbDep, current_user: CurrentUser):
-    return db.scalars(
-        select(Farm).join(FarmMember).where(FarmMember.user_id == current_user.id)
+    rows = db.execute(
+        select(Farm, FarmMember.role).join(FarmMember).where(FarmMember.user_id == current_user.id)
     ).all()
+    farms: list[Farm] = []
+    for farm, role in rows:
+        setattr(farm, "role", role)
+        farms.append(farm)
+    return farms
 
 
 @router.post("", response_model=FarmRead)

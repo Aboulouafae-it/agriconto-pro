@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "AgriConto Pro",
+    "slug": "agriconto-pro-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "agriconto",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1B5E20"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.agricontopro.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "AgriConto Pro necessita della fotocamera per acquisire fatture e documenti.",
+        "NSPhotoLibraryUsageDescription": "AgriConto Pro necessita dell'accesso alla galleria per caricare documenti."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1B5E20"
+      },
+      "package": "com.agricontopro.mobile",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-image-picker",
+      "expo-camera",
+      "expo-font"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      }
+    }
+  }
+}
